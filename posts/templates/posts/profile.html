@@ -1,0 +1,172 @@
+{% extends 'posts/base.html' %}
+{% block title %}{{ profile_user.username }} - Profile{% endblock %}
+
+{% block content %}
+<style>
+  .profile-page {
+  max-width: 935px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #dbdbdb;
+}
+
+@media (min-width: 768px) {
+  .profile-header {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 50px;
+    padding-bottom: 40px;
+  }
+}
+
+.profile-image img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #dbdbdb;
+}
+
+.user-info {
+  text-align: center;
+  margin-top: 15px;
+}
+
+@media (min-width: 768px) {
+  .user-info {
+    text-align: left;
+    margin-top: 0;
+  }
+}
+
+.user-info h2 {
+  font-size: 28px;
+  font-weight: 300;
+  margin-bottom: 10px;
+}
+
+/* Follow / Edit Profile Buttons */
+.user-info .btn {
+  font-size: 14px;
+  padding: 5px 9px;
+  border-radius: 4px;
+}
+
+.btn-primary {
+  background-color: #0095f6;
+  border: none;
+  color: #fff;
+}
+
+.btn-outline-secondary {
+  background-color: #fff;
+  border: 1px solid #dbdbdb;
+  color: #262626;
+}
+
+/* STATS */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+@media (min-width: 768px) {
+  .stats {
+    justify-content: flex-start;
+  }
+}
+
+.bio {
+  font-size: 14px;
+  color: #262626;
+  line-height: 1.4;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .bio {
+    text-align: left;
+  }
+}
+
+/* POSTS GRID */
+.profile-posts {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: #dbdbdb; /* grid lines like Instagram */
+}
+
+.post-img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+}
+
+</style>
+<div class="profile-page">
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="profile-image">
+      <img src="{{ profile_user.profile.profile_image.url }}" alt="Profile">
+    </div>
+
+    <div class="user-info">
+      <div class="d-flex align-items-center gap-3 mb-2 flex-wrap">
+        <h2>{{ profile_user.username }}</h2>
+
+        {% if request.user == profile_user %}
+  <a href="{% url 'edit_profile' %}" class="btn btn-outline-secondary btn-sm">Edit Profile</a>
+{% else %}
+  <form method="POST" action="{% url 'toggle_follow' profile_user.username %}">
+    {% csrf_token %}
+    {% if is_following %}
+      <button type="submit" class="btn btn-outline-secondary btn-sm">Following</button>
+    {% else %}
+      <button type="submit" class="btn btn-primary btn-sm">Follow</button>
+    {% endif %}
+  </form>
+{% endif %}
+
+      </div>
+
+      <!-- STATS -->
+      <div class="stats d-flex gap-4 mb-2">
+        <div><strong>{{ posts.count }}</strong> posts</div>
+        <div><strong>{{ profile_user.profile.followers.count }}</strong> followers</div>
+        <div><strong>{{ profile_user.profile.following.count }}</strong> following</div>
+      </div>
+
+      <!-- BIO -->
+      <div class="bio">
+        {{ profile_user.profile.bio }}
+      </div>
+    </div>
+  </div>
+
+  <!-- POSTS GRID -->
+  <div class="profile-posts">
+    {% for post in posts %}
+      <a href="{% url 'post_detail' post.id %}">
+        <img src="{{ post.image.url }}" alt="Post" class="post-img">
+      </a>
+    {% empty %}
+      <p style="text-align:center; margin-top:20px;">No posts yet.</p>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

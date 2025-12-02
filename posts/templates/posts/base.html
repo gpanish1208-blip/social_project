@@ -1,0 +1,576 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}InstaClone{% endblock %}</title>
+    
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+
+<style>
+  /* =========================
+   RESET
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #fafafa;
+  color: #111;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+.sidebar {
+  width: 250px;
+  background: #fff;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: -250px; /* hidden by default */
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  transition: left 0.3s;
+  z-index: 105;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+.sidebar .logo {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #111;
+  padding: 10px 0;
+  font-size: 18px;
+  transition: color 0.2s;
+}
+
+.sidebar a:hover {
+  color: #007bff;
+}
+
+.profile-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.profile-box img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+.profile-box a {
+  text-decoration: none;
+  color: #111;
+  font-size: 18px;
+}
+
+/* =========================
+   OVERLAY
+========================= */
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.35);
+  z-index: 100;
+  transition: all 0.3s;
+}
+
+.overlay.show {
+  display: block;
+}
+
+/* =========================
+   MAIN CONTENT
+========================= */
+.main-inner {
+  margin-left: 0;
+  transition: margin-left 0.3s;
+  padding: 20px;
+}
+
+.sidebar.active ~ .main-inner {
+  margin-left: 250px;
+}
+
+.container-main {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.content-wrapper {
+  flex: 1;
+}
+
+.feed-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* =========================
+   MOBILE TOPBAR
+========================= */
+.mobile-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  padding: 10px 15px;
+  z-index: 110;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.mobile-topbar button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hamburger button (mobile) */
+.hamburger-btn {
+  width: 30px;
+  height: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.hamburger-btn span {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background: #111;
+  border-radius: 2px;
+}
+
+/* =========================
+   PROFILE PICS
+========================= */
+.profile-pic {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* =========================
+   MOBILE RESPONSIVE
+========================= */
+@media (max-width: 992px) {
+  .main-inner {
+    margin-left: 0;
+  }
+
+  .sidebar {
+    top: 0;
+    left: -250px;
+    height: 100%;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .overlay {
+    display: none;
+  }
+
+  .overlay.show {
+    display: block;
+  }
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.btn-outline-danger, .btn-outline-secondary {
+  border-radius: 5px;
+}
+
+/* =========================
+   FEED CARDS (Optional)
+========================= */
+.feed-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+}
+
+/* =========================
+   LINK HOVER EFFECTS
+========================= */
+.sidebar a:hover {
+  color: #007bff;
+}
+
+.offcanvas-body .list-group-item:hover {
+  background-color: #f0f0f0;
+}
+/* =========================
+   SIDEBAR DESKTOP FIX
+========================= */
+
+@media (max-width: 992px) {
+  .sidebar { left: -250px; }
+  .logo { display: none; }     /* hide sidebar logo */
+  .logo-mobile { display: block; } /* show mobile logo */
+}
+@media (min-width: 992px) {
+  .sidebar { left: 0; }
+  .main-inner { margin-left: 250px; }
+  .mobile-topbar, .hamburger-btn { display: none; }
+}
+
+@media (min-width: 992px) {
+  .sidebar {
+    left: 0; /* show sidebar by default on desktop */
+  }
+
+  .main-inner {
+    margin-left: 250px; /* push main content to the right */
+    padding: 20px;
+  }
+
+  .mobile-topbar, .hamburger-btn {
+    display: none; /* hide mobile buttons on desktop */
+  }
+
+  .overlay {
+    display: none; /* overlay not needed on desktop */
+  }
+}
+
+.logo {
+    font-family: "Pacifico", cursive;
+    font-size: 28px;
+    color: #111;
+}
+@media (min-width: 768px) {
+    .col-md-8 {
+        flex: 0 0 auto;
+        width: 30.666667%;
+    }
+}
+.logo-mobile{
+    font-family: "Pacifico", cursive;
+    font-size: 20px;
+    color: #111;
+}
+
+
+
+
+</style>
+</head>
+
+<body>
+
+  <!-- MOBILE top-left toggle -->
+  <div class="mobile-topbar d-lg-none">
+    <button class="btn btn-light p-2 shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar"
+      aria-controls="mobileSidebar" title="Menu">
+
+      <!-- simple menu icon -->
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M3 6h18M3 12h18M3 18h18" stroke="#111" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+  </div>
+<!-- MOBILE TOPBAR -->
+<div class="mobile-topbar d-lg-none">
+
+    <!-- hamburger -->
+    <button class="btn btn-light p-2 shadow-sm" data-bs-toggle="offcanvas"
+        data-bs-target="#mobileSidebar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M3 6h18M3 12h18M3 18h18"
+                stroke="#111" stroke-width="2" stroke-linecap="round" />
+        </svg>
+    </button>
+
+    <!-- MOBILE LOGO (Added) -->
+    <h4 class="logo-mobile ms-3" style="margin-bottom: 0px;">INSTACLONE</h4>
+
+</div>
+
+  <!-- HAMBURGER BUTTON (visible on mobile) -->
+  <button class="hamburger-btn d-md-none" onclick="toggleMenu()">
+  </button>
+     <h4 class="logo-mobile ms-3">INSTACLONE</h4>
+
+</div>
+
+  <!-- LEFT SIDEBAR -->
+  <!-- LEFT SIDEBAR -->
+<div id="sidebar" class="sidebar"  >
+  <h4 class="logo">INSTACLONE</h4>
+  
+
+  <a href="{% url 'home' %}" style="font-size: large;"><i class="fa-sharp-duotone fa-solid fa-house" style="padding-right: 10px;"></i>Home</a>
+
+  <a href="{% url 'notifications' %}" style="font-size: large;"><i class="fa-etch fa-solid fa-bell" style="padding-right: 10px;"></i>Notifications</a>
+
+  <a href="{% url 'create_post' %}" style="font-size: large;"><i class="fa-sharp-duotone fa-solid fa-circle-plus" style="padding-right: 10px;"></i>Create</a>
+
+  {% if user.is_authenticated %}
+      <!-- PROFILE SECTION (Instagram style) -->
+      <div class="profile-box d-flex align-items-center gap-1 mt-3 mb-2" 
+           style="border-radius:10px;">
+
+        <!-- Profile Image -->
+        <img 
+          src="{{ user.profile.profile_image.url }}" 
+          class="rounded-circle" 
+          alt="Profile"
+          style="width:40px;height:40px;object-fit:cover;border:2px solid #ddd;"
+        >
+
+        <!-- Username + Profile Link -->
+        <div>
+          
+          <!-- <div style="font-weight:600;">{{ user.username }}</div> -->
+          <a href="{% url 'profile' user.username %}" 
+             style="font-size:20px;color:black6;text-decoration:none;">
+              Profile
+          </a>
+        </div>
+
+      </div>
+
+      <!-- LOGOUT BUTTON -->
+      <form method="POST" action="{% url 'logout' %}" style="padding: 10px; padding-top: 485px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger w-100">
+          Logout
+        </button>
+      </form>
+      
+
+  {% else %}
+      <a href="{% url 'login' %}">Login</a>
+      <a href="{% url 'register' %}">Register</a>
+  {% endif %}
+</div>
+
+
+  <!-- OVERLAY (when menu opens) -->
+  <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+
+  <!-- MOBILE OFFCANVAS SIDEBAR (left slide) -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">Menu</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+      <div class="list-group list-group-flush" >
+        <a class="list-group-item list-group-item-action text-black" href="{% url 'home' %}">Home</a>
+        <button class="list-group-item list-group-item-action"
+          onclick="document.getElementById('searchInput')?.focus()">Search</button>
+        <a class="list-group-item list-group-item-action text-black" href="#">Explore</a>
+        <a class="list-group-item list-group-item-action text-black" href="#">Reels</a>
+
+        <a class="list-group-item list-group-item-action text-black" href="{% url 'notifications' %}">
+          Notifications
+        </a>
+
+        <a class="list-group-item list-group-item-action text-black" href="{% url 'create_post' %}">Create</a>
+        <div class="profile-compact">
+          {% if user.is_authenticated %}
+          <a href="{% url 'profile' user.username %}" class="d-flex align-items-center gap-2 text-decoration-none">
+            <img src="{{ user.profile.profile_image.url }}" class="profile-pic" alt="pf">
+            <div>
+              <div style="font-weight:600">{{ user.username }}</div>
+              <div class="small-muted">View profile</div>
+            </div>
+          </a>
+          <div class="mt-3">
+            <form method="POST" action="{% url 'logout' %}">{% csrf_token %}
+              <button class="btn btn-outline-secondary w-100" type="submit">Logout</button>
+            </form>
+          </div>
+          {% else %}
+          <a class="list-group-item list-group-item-action" href="{% url 'login' %}">Login</a>
+          <a class="list-group-item list-group-item-action" href="{% url 'register' %}">Register</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT: center feed + right column -->
+  <div class="main-inner">
+    <div class="container-main">
+      <!-- CENTER: feed (your existing block content) -->
+      <div class="content-wrapper">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="feed-inner">
+          {% block content %}
+          <!-- your posts should render here (post-card markup) -->
+          {% endblock %}
+        </div>
+      </div>
+      
+
+      <!-- RIGHT PANEL: suggestions (desktop only) -->
+      <!-- <aside class="right-panel d-none d-lg-block">
+      <div style="width:100%;max-width:320px;">
+        <div class="card" style="border:none;background:transparent">
+          <div style="padding:14px 12px 8px 12px">
+            {% if user.is_authenticated %}
+              <div class="d-flex align-items-center gap-2">
+                <img src="{{ user.profile.profile_image.url }}" class="profile-pic" alt="pf">
+                <div>
+                  <div style="font-weight:600">{{ user.username }}</div>
+                  <div class="small-muted">Your profile</div>
+                </div>
+              </div>
+            {% else %}
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div style="font-weight:600">Welcome</div>
+                  <div class="small-muted">Log in to see photos and more</div>
+                </div>
+                <div>
+                  <a class="btn btn-sm btn-outline-dark" href="{% url 'login' %}">Log in</a>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <div style="padding:0 12px 12px 12px">
+            <div class="d-flex justify-content-between align-items-center small-muted mb-2">
+              <div>Suggestions for you</div>
+              <div style="font-size:12px;color:#999">See all</div>
+            </div> -->
+
+      <!-- Example suggestion items (server should supply recommended users) -->
+      <!-- {% comment %} Replace these static examples with server-driven suggestions {% endcomment %}
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="d-flex align-items-center gap-2">
+                <img src="{% static 'posts/sample_user1.jpg' %}" class="profile-pic" style="width:36px;height:36px" alt="">
+                <div>
+                  <div style="font-weight:600">example_user</div>
+                  <div class="small-muted" style="font-size:12px">Suggested</div>
+                </div>
+              </div>
+              <div><button class="btn btn-sm btn-primary">Follow</button></div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="d-flex align-items-center gap-2">
+                <img src="{% static 'posts/sample_user2.jpg' %}" class="profile-pic" style="width:36px;height:36px" alt="">
+                <div>
+                  <div style="font-weight:600">someone</div>
+                  <div class="small-muted" style="font-size:12px">Suggested</div>
+                </div>
+              </div>
+              <div><button class="btn btn-sm btn-primary">Follow</button></div>
+            </div> -->
+
+      <!-- end suggestions -->
+      <!-- </div>
+        </div>
+
+        <div class="small-muted mt-3" style="font-size:12px;padding:12px">
+          © 2025 InstaClone
+        </div>
+      </div>
+    </aside> -->
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- keep your CSRF helper & like/comment AJAX if present previously -->
+  <script>
+    // CSRF token helper (keeps existing functionality)
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Like/comment handlers — keep your existing handlers (if any) here.
+    // Example: document.querySelectorAll('.like-btn').forEach(...)
+
+    /* optional: auto-close mobile offcanvas when clicking a link (small UX nicety) */
+    document.addEventListener('click', function (e) {
+      const offcanvasEl = document.getElementById('mobileSidebar');
+      if (!offcanvasEl) return;
+      const bs = bootstrap.Offcanvas.getInstance(offcanvasEl);
+      if (!bs) return;
+      // if a link inside offcanvas is clicked, close it
+      if (e.target.closest('.offcanvas') && e.target.closest('a')) {
+        bs.hide();
+      }
+    });
+
+    function toggleMenu() {
+      document.getElementById("sidebar").classList.toggle("active");
+      document.getElementById("overlay").classList.toggle("show");
+    }
+  </script>
+
+
+
+</body>
+
+</html>

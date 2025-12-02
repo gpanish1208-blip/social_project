@@ -1,0 +1,44 @@
+{% extends "posts/base.html" %}
+{% load static %}
+{% block title %}Login - SocialSite{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div class="card shadow p-4" style="max-width: 400px; width: 100%; background: rgba(255, 255, 255, 0.9); border-radius: 20px;">
+    <h3 class="text-center mb-4">Login to SocialSite</h3>
+
+    <form method="post" action="">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="id_username" class="form-label">Username</label>
+        {{ form.username }}
+      </div>
+      <div class="mb-3">
+        <label for="id_password" class="form-label">Password</label>
+        {{ form.password }}
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+
+    <div class="text-center mt-3">
+      <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+    </div>
+  </div>
+</div>
+
+<style>
+body {
+  background: linear-gradient(135deg, #fdfbfb, #ebedee, #a0c8c3, #2c3e50);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.card {
+  backdrop-filter: blur(10px);
+}
+</style>
+{% endblock %}

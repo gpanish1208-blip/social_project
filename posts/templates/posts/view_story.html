@@ -1,0 +1,20 @@
+{% extends 'posts/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-4 text-center">
+
+    <h4>{{ story_user.username }}'s Story</h4>
+
+    {% for story in stories %}
+        <div class="mb-4">
+            <img src="{{ story.image.url }}" 
+                 class="img-fluid rounded" 
+                 style="max-height: 500px; object-fit: contain;">
+            <p class="text-muted">{{ story.created_at|timesince }} ago</p>
+        </div>
+    {% empty %}
+        <p>No active stories.</p>
+    {% endfor %}
+
+</div>
+{% endblock %}

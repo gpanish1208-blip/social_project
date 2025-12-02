@@ -1,0 +1,437 @@
+{% extends 'posts/base.html' %}
+{% load static %}
+{% block title %}Home - InstaClone{% endblock %}
+
+{% block content %}
+<div class="row" style="justify-content: center;">
+
+  <!-- STORIES SECTION -->
+  <div class="stories d-flex overflow-auto mb-4 py-2">
+      {% for profile in profiles %}
+          {% with has_story=False %}
+              {% for story in profile.stories.all %}
+                  {% if not story.is_expired %}
+                      {% with has_story=True %}
+                          {% ifchanged profile.user.id %}
+                              <div class="story text-center me-3">
+                                  <a href="{% url 'view_story' profile.user.id %}">
+                                      <img src="{{ profile.profile_pic.url }}" class="story-img rounded-circle border border-danger">
+                                  </a>
+                                  <small class="d-block">{{ profile.user.username|truncatechars:10 }}</small>
+                              </div>
+                          {% endifchanged %}
+                      {% endwith %}
+                  {% endif %}
+              {% endfor %}
+          {% endwith %}
+      {% endfor %}
+  </div>
+
+
+
+  <!-- Posts Feed -->
+  <div class="col-md-8" >
+    {% for post in posts %}
+    <div class="post-card p-3 mb-4">
+
+      <!-- Header -->
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="d-flex align-items-center">
+          <img src="{{ post.user.profile.profile_image.url }}" class="profile-pic me-2" alt="pf">
+          <div>
+            <a href="{% url 'profile' post.user.username %}" class="fw-bold text-dark text-decoration-none">
+              {{ post.user.username }}
+            </a>
+            <div class="text-muted small">{{ post.created_at|date:"M d, Y H:i" }}</div>
+          </div>
+        </div>
+
+        <!-- 3-dot dropdown -->
+        <div class="dropdown">
+          <button class="btn p-0 text-dark fs-4" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            ⋯
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            {% if post.user == user %}
+            <li><a class="dropdown-item text-danger" href="{% url 'delete_post' post.id %}">Delete</a></li>
+            {% endif %}
+            <li><a class="dropdown-item text-warning" href="#" data-bs-toggle="modal"
+                data-bs-target="#reportModal{{ post.id }}">Report</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Post Image -->
+      <div class="mb-2">
+        <a href="{% url 'post_detail' post.pk %}">
+          <img src="{{ post.image.url }}" class="post-image rounded shadow-sm" alt="post">
+        </a>
+      </div>
+
+      <!-- Like and Comment Buttons -->
+      <div class="d-flex align-items-center gap-2 mt-2">
+        <!-- Like -->
+        <button class="glass-btn like-btn {% if user in post.likes.all %}active{% endif %}"
+          data-post-id="{{ post.pk }}">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="{% if user in post.likes.all %}red{% else %}none{% endif %}"
+            stroke="red" viewBox="0 0 24 24" width="20" height="20">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                     2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81
+                     14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0
+                     3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+          <span class="like-count">{{ post.likes.count }}</span>
+        </button>
+
+        <!-- Comment -->
+        <button class="glass-btn comment-btn" data-post-id="{{ post.pk }}" data-bs-toggle="modal"
+          data-bs-target="#commentModal">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20"
+            height="20">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+          </svg>
+          <span class="comment-count">{{ post.comments.count }}</span>
+        </button>
+      </div>
+
+      <!-- Caption and comments -->
+      <div class="mt-2"><strong>{{ post.user.username }}</strong> {{ post.caption }}</div>
+      {% if post.comments.all %}
+      <div class="mt-3 small text-muted">
+        {% for comment in post.comments.all|slice:":3" %}
+        <div><strong>{{ comment.user.username }}</strong> {{ comment.content }}</div>
+        {% endfor %}
+        {% if post.comments.count > 3 %}
+        <a href="{% url 'post_detail' post.pk %}" class="small text-decoration-none">View all {{ post.comments.count }}
+          comments</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal fade" id="reportModal{{ post.id }}" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content glass-modal">
+          <div class="modal-header">
+            <h5 class="modal-title">Report Post</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <textarea id="reportReason{{ post.id }}" class="form-control" rows="3"
+              placeholder="Describe the issue..."></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" onclick="submitReport({{ post.id }})">Report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% empty %}
+    <p class="text-muted">No posts yet — follow people to see their posts.</p>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- Comment Modal -->
+<div class="modal fade" id="commentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content glass-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Add a Comment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <textarea id="commentContent" class="form-control" placeholder="Write something..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="sendCommentBtn">Post</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  function submitReport(postId) {
+    const reason = document.getElementById(`reportReason${postId}`).value.trim();
+    if (!reason) return alert("Please enter a reason.");
+
+    fetch("{% url 'report_post' 0 %}".replace("0", postId), {
+      method: "POST",
+      headers: { "X-CSRFToken": getCookie("csrftoken"), "X-Requested-With": "XMLHttpRequest" },
+      body: new URLSearchParams({ reason })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          alert("Report submitted successfully ✅");
+          bootstrap.Modal.getInstance(document.getElementById(`reportModal${postId}`)).hide();
+          document.getElementById(`reportReason${postId}`).value = "";
+        } else {
+          alert("Something went wrong.");
+        }
+      });
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  // LIKE HANDLER
+  document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const postId = this.dataset.postId;
+      fetch("{% url 'like_post' 0 %}".replace("0", postId), {
+        method: "POST",
+        headers: { "X-CSRFToken": csrftoken, "X-Requested-With": "XMLHttpRequest" }
+      })
+        .then(res => res.json())
+        .then(data => {
+          this.querySelector('.like-count').innerText = data.likes_count;
+          const heart = this.querySelector('svg');
+          if (data.liked) {
+            this.classList.add('active');
+            heart.setAttribute('fill', 'red');
+            this.animate([{ transform: 'scale(1.3)' }, { transform: 'scale(1)' }], { duration: 200 });
+          } else {
+            this.classList.remove('active');
+            heart.setAttribute('fill', 'none');
+          }
+        });
+    });
+  });
+
+  // COMMENT HANDLER
+  let currentPostId = null;
+  document.querySelectorAll('.comment-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      currentPostId = this.dataset.postId;
+    });
+  });
+
+  document.getElementById('sendCommentBtn').addEventListener('click', function () {
+    const content = document.getElementById('commentContent').value;
+    if (!content.trim()) return;
+
+    fetch("{% url 'add_comment' 0 %}".replace("0", currentPostId), {
+      method: "POST",
+      headers: { "X-CSRFToken": csrftoken, "X-Requested-With": "XMLHttpRequest" },
+      body: new URLSearchParams({ content })
+    })
+      .then(res => res.json())
+      .then(data => {
+        const btn = document.querySelector(`.comment-btn[data-post-id="${currentPostId}"]`);
+        btn.querySelector('.comment-count').innerText = data.comments_count;
+        document.getElementById('commentContent').value = '';
+        bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();
+      });
+  });
+</script>
+
+<!-- CSS -->
+<style>
+/* ==========================
+   GLOBAL
+=========================== */
+body {
+    background: #fff !important;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ==========================
+   STORIES
+=========================== */
+.stories {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+}
+
+.story-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid #c13584;
+    object-fit: cover;
+}
+
+@media(max-width: 768px) {
+    .story-img {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* ==========================
+   POST CARD (NO BOX STYLE)
+=========================== */
+.post-card {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding-bottom: 20px;
+    margin-bottom: 35px;
+}
+
+/* ==========================
+   POST HEADER
+=========================== */
+.profile-pic {
+    width: 45px !important;
+    height: 45px !important;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.username {
+    text-decoration: none;
+    color: #262626;
+    font-weight: 600;
+}
+
+@media(max-width: 768px) {
+    .profile-pic {
+        width: 38px !important;
+        height: 38px !important;
+    }
+}
+
+/* ==========================
+   MAKE FEED SIZE SMALLER (IG SIZE)
+=========================== */
+.col-md-8 {
+    max-width: 470px !important; /* Instagram exact width */
+    padding: 0 !important;
+}
+
+/* Center feed */
+.row {
+    display: flex;
+    justify-content: center !important;
+}
+
+/* ==========================
+   POST CARD SPACING
+=========================== */
+.post-card {
+    padding-bottom: 20px !important;
+    margin-bottom: 25px !important;
+}
+
+/* ==========================
+   POST IMAGE SIZE FIX
+=========================== */
+.post-image {
+    width: 100%;
+    height: auto !important;   /* ✔ keep natural height */
+    object-fit: contain !important;  /* ✔ no crop */
+    border-radius: 10px;
+}
+
+/* MOBILE FIX */
+@media(max-width: 768px) {
+    .col-md-8 {
+        max-width: 100% !important;
+    }
+    .post-image {
+        height: 380px !important; /* Smaller for phone */
+    }
+}
+
+
+/* ==========================
+   LIKE / COMMENT BUTTONS
+=========================== */
+.like-btn,
+.comment-btn {
+    background: none !important;
+    border: none !important;
+    cursor: pointer;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 18px;
+    color: #262626;
+}
+
+.like-btn:hover,
+.comment-btn:hover {
+    opacity: 0.7;
+}
+
+/* ==========================
+   REMOVE GLASS EFFECT COMPLETELY
+=========================== */
+.glass-btn {
+    background: none !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+/* ==========================
+   DROPDOWN
+=========================== */
+.dropdown-menu {
+    background: #fff !important;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+}
+
+.dropdown-item:hover {
+    background: #f2f2f2 !important;
+    color: #000 !important;
+}
+
+/* ==========================
+   MODALS
+=========================== */
+.glass-modal {
+    background: #fff !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+
+/* ==========================
+   CARDS / CONTAINERS REMOVE SHADOWS
+=========================== */
+.card,
+.story-card,
+.profile-card,
+.feed-card,
+.container,
+.row,
+.col,
+.feed-wrapper {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+
+</style>
+
+{% endblock %}
+
+

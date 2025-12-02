@@ -1,0 +1,103 @@
+{% extends 'posts/base.html' %}
+{% load static %}
+{% block title %}Create Post - InstaClone{% endblock %}
+
+{% block content %}
+
+<style>
+/* ===== Animated Background ===== */
+body {
+  background: linear-gradient(135deg, #fdfbfb, #ebedee, #a0c8c3, #2c3e50);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+  font-family: 'Poppins', sans-serif;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ===== Glass Card ===== */
+.glass-card {
+  background: rgba(255, 255, 255, 0.27);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  padding: 25px;
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  transition: 0.3s;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Input styling */
+.glass-input {
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 12px;
+  padding: 10px;
+  width: 100%;
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: #2c3e50;
+  background: rgba(255,255,255,0.8);
+}
+
+/* Heading text */
+h5 {
+  font-weight: 600;
+  color: #2c3e50;
+}
+input, textarea {
+    border-radius: 10px !important;
+    padding: 10px !important;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+</style>
+
+<div class="row justify-content-center mt-5">
+  <div class="col-md-6">
+    <div class="glass-card">
+
+      <h5 class="mb-3 text-center">Create a New Post</h5>
+
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <!-- Image Input -->
+        <div class="mb-3">
+          {{ form.image.label_tag }}
+          {{ form.image }}
+          {% for error in form.image.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Caption Input -->
+        <div class="mb-3">
+          {{ form.caption.label_tag }}
+          {{ form.caption }}
+          {% for error in form.caption.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Submit Button -->
+        <button class="btn btn-primary w-100" type="submit">Post</button>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

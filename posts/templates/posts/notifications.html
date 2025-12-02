@@ -1,0 +1,76 @@
+{% extends 'posts/base.html' %}
+{% load static %}
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+
+<style>
+/* ===== Animated Background (same as login & home) ===== */
+body {
+    background: linear-gradient(135deg, #fdfbfb, #ebedee, #a0c8c3, #2c3e50);
+    background-size: 400% 400%;
+    animation: gradientShift 10s ease infinite;
+    font-family: 'Poppins', sans-serif;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ===== Glass Notifications Card ===== */
+.glass-card {
+    background: rgba(255, 255, 255, 0.27);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.35);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Headings */
+h3 {
+    color: #ffffff;
+    text-shadow: 0 0 3px rgba(0,0,0,0.2);
+}
+</style>
+
+
+<div class="container mt-4">
+
+    <h3 class="mb-4 text-white">Notifications</h3>
+
+    {% if reports %}
+        {% for r in reports %}
+            <div class="glass-card mb-3 text-black">
+
+                <p><strong>Post:</strong> {{ r.post.caption }}</p>
+
+                <p><strong>Your Report:</strong> {{ r.reason }}</p>
+
+                <p>
+                    <strong>Admin Reply:</strong> 
+                    {% if r.reply %}
+                        {{ r.reply }}
+                    {% else %}
+                        <span class="text-muted">No reply yet.</span>
+                    {% endif %}
+                </p>
+
+                <small class="text-muted">Date: {{ r.created_at }}</small>
+            </div>
+        {% endfor %}
+
+    {% else %}
+        <p class="text-white">No notifications.</p>
+    {% endif %}
+
+</div>
+
+{% endblock %}
