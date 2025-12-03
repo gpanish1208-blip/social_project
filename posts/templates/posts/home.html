@@ -251,8 +251,16 @@
    GLOBAL
 =========================== */
 body {
-    background: #fff !important;
-    font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #fdfbfb, #ebedee, #a0c8c3, #2c3e50);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+  font-family: 'Poppins', sans-serif;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* ==========================
@@ -352,7 +360,8 @@ body {
         max-width: 100% !important;
     }
     .post-image {
-        height: 380px !important; /* Smaller for phone */
+        height: 185px !important; /* Smaller for phone */
+        box-shadow: none !important;
     }
 }
 

@@ -1,171 +1,197 @@
-/* RESET */
-* {
+/* ==========================
+   BODY & BASE
+========================== */
+body {
+    background: #fafafa;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
-/* GLOBAL */
-body {
-    font-family: "Poppins", sans-serif;
-    background: #000;
-    color: #fff;
-    overflow-x: hidden;
-}
-
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
-/* TOP NAVBAR */
-.navbar {
-    background: rgba(0,0,0,0.65);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255,255,255,0.15);
-    padding: 12px 20px;
+/* ==========================
+   STORIES
+========================== */
+.stories-container {
     display: flex;
-    justify-content: space-between;
+    overflow-x: auto;
+    padding: 12px 0;
+    gap: 12px;
+    border-bottom: 1px solid #dbdbdb;
+    background: #fff;
+}
+
+.story {
+    text-align: center;
+    font-size: 12px;
+    flex: 0 0 auto;
+}
+
+.story img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #c13584;
+    padding: 2px;
+    transition: transform 0.2s ease;
+}
+
+.story img:hover {
+    transform: scale(1.1);
+}
+
+.story small {
+    display: block;
+    margin-top: 4px;
+    color: #262626;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ==========================
+   POST CARD
+========================== */
+.post-card {
+    background: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+/* Post Header */
+.post-card-header {
+    display: flex;
     align-items: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
+    justify-content: space-between;
+    padding: 12px;
 }
 
-.navbar .logo {
-    font-size: 22px;
-    font-weight: bold;
-}
-
-.navbar .nav-links {
+.post-card-header .profile-info {
     display: flex;
-    gap: 18px;
+    align-items: center;
 }
 
-.navbar .nav-links a {
-    padding: 6px 12px;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.12);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.18);
+.post-card-header .profile-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
 }
 
-.navbar .nav-links a:hover {
-    background: rgba(255,255,255,0.25);
+.post-card-header a.username {
+    font-weight: 600;
+    color: #262626;
+    text-decoration: none;
 }
 
-/* DESKTOP SIDEBAR */
-.sidebar {
-    width: 220px;
-    height: 100vh;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(10px);
-    border-right: 1px solid rgba(255,255,255,0.1);
-    padding: 100px 20px 20px 20px;
-    position: fixed;
-    top: 0;
-    left: 0;
+.post-card-header a.username:hover {
+    text-decoration: underline;
+}
+
+.post-card-header .timestamp {
+    font-size: 12px;
+    color: #8e8e8e;
+}
+
+/* Post Image */
+.post-image {
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+}
+
+/* Post Actions */
+.post-actions {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    padding: 8px 12px;
     gap: 12px;
 }
 
-.sidebar a {
-    padding: 12px;
-    border-radius: 10px;
-    color: white;
-    font-size: 16px;
-    transition: 0.3s;
+.post-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.sidebar a:hover {
-    background: rgba(255,255,255,0.15);
+.post-actions button svg {
+    width: 24px;
+    height: 24px;
 }
 
-/* HIDE SIDEBAR ON MOBILE */
+/* Active like button */
+.post-actions .like-btn.active svg {
+    fill: red;
+    stroke: red;
+}
+
+/* Caption */
+.post-caption {
+    padding: 0 12px 12px 12px;
+}
+
+.post-caption strong {
+    margin-right: 6px;
+}
+
+/* Comments */
+.post-comments {
+    padding: 0 12px 12px 12px;
+    font-size: 14px;
+}
+
+.post-comments .view-all {
+    color: #8e8e8e;
+    text-decoration: none;
+}
+
+.post-comments .view-all:hover {
+    text-decoration: underline;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    min-width: 120px;
+    border-radius: 6px;
+    border: 1px solid #dbdbdb;
+    background: #fff;
+}
+
+.dropdown-item:hover {
+    background-color: #efefef;
+}
+
+/* Modal */
+.modal-content {
+    border-radius: 12px;
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
 @media (max-width: 768px) {
-    .sidebar {
-        display: none;
-    }
-}
-
-/* MAIN CONTENT */
-.container-main {
-    padding: 100px 20px;
-    padding-left: 260px;
-}
-
-@media (max-width: 768px) {
-    .container-main {
-        padding-left: 20px;
-    }
-}
-@media (min-width: 768px) {
-    .col-md-8 {
-        flex: 0 0 auto;
-        width: 450px;
-    }
-}
-
-/* POST CARD */
-.post-card {
-    background: rgba(255,255,255,0.07);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 10px;
-    border: 1px solid rgba(255,255,255,0.15);
-    margin-bottom: 20px;
-}
-
-.post-card img {
-    width: 100%;
-    height: auto;
-    border-radius: 14px;
-}
-
-/* PROFILE PAGE — EDIT BUTTON */
-.btn-edit-profile {
-    padding: 7px 18px;
-    border-radius: 10px;
-    font-weight: 600;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.25);
-    backdrop-filter: blur(10px);
-    color: white !important;
-    transition: 0.3s;
-    display: inline-block;
-}
-
-.btn-edit-profile:hover {
-    background: rgba(255,255,255,0.25);
-    border-color: rgba(255,255,255,0.4);
-}
-
-/* MOBILE BOTTOM NAV */
-.bottom-nav {
-    display: none;
-}
-
-@media (max-width: 768px) {
-    .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(0,0,0,0.75);
-        backdrop-filter: blur(10px);
-        border-top: 1px solid rgba(255,255,255,0.15);
-        padding: 10px 0;
-        display: flex;
-        justify-content: space-around;
-        z-index: 1000;
+    .stories-container {
+        padding: 8px 0;
     }
 
-    .bottom-nav a {
-        text-align: center;
-        font-size: 14px;
-        color: #fff;
+    .story img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .post-card-header .profile-info img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .post-actions button svg {
+        width: 20px;
+        height: 20px;
     }
 }

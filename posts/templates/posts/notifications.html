@@ -39,21 +39,40 @@ h3 {
     color: #ffffff;
     text-shadow: 0 0 3px rgba(0,0,0,0.2);
 }
+
+/* Image Styling */
+.notif-img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
 </style>
 
 
 <div class="container mt-4">
 
-    <h3 class="mb-4 text-white">Notifications</h3>
+    <h3 class="mb-4 text-black">Notifications</h3>
 
     {% if reports %}
         {% for r in reports %}
             <div class="glass-card mb-3 text-black">
 
+                <!-- Post Caption -->
                 <p><strong>Post:</strong> {{ r.post.caption }}</p>
 
+                <!-- ⭐ ADDED: Post Image -->
+                {% if r.post.image %}
+                    <img src="{{ r.post.image.url }}" 
+                         alt="reported post image"
+                         class="notif-img">
+                {% endif %}
+
+                <!-- Report Reason -->
                 <p><strong>Your Report:</strong> {{ r.reason }}</p>
 
+                <!-- Admin Reply -->
                 <p>
                     <strong>Admin Reply:</strong> 
                     {% if r.reply %}
@@ -68,7 +87,7 @@ h3 {
         {% endfor %}
 
     {% else %}
-        <p class="text-white">No notifications.</p>
+        <p class="text-black">No notifications.</p>
     {% endif %}
 
 </div>
