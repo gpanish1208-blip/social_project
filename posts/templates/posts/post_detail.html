@@ -3,6 +3,20 @@
 {% block title %}Post - {{ post.user.username }}{% endblock %}
 
 {% block content %}
+<style>
+  body {
+  background: linear-gradient(135deg, #fdfbfb, #ebedee, #a0c8c3, #2c3e50);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+  font-family: 'Poppins', sans-serif;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+</style>
 <div class="row justify-content-center mt-4">
   <div class="col-md-8">
     <div class="card border-0">

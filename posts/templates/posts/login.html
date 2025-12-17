@@ -3,42 +3,158 @@
 {% block title %}Login - SocialSite{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center vh-100">
-  <div class="card shadow p-4" style="max-width: 400px; width: 100%; background: rgba(255, 255, 255, 0.9); border-radius: 20px;">
-    <h3 class="text-center mb-4">Login to SocialSite</h3>
+<style>
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #fdfbfb, #ebedee, #a0c8c3, #2c3e50);
+    background-size: 400% 400%;
+    animation: gradientShift 10s ease infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-    <form method="post" action="">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label for="id_username" class="form-label">Username</label>
-        {{ form.username }}
-      </div>
-      <div class="mb-3">
-        <label for="id_password" class="form-label">Password</label>
-        {{ form.password }}
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Login</button>
-    </form>
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
 
-    <div class="text-center mt-3">
-      <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+  /* GLASS CARD */
+  .glass-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 35px 30px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.35);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.15);
+    text-align: center;
+  }
+
+  .title {
+    font-weight: 600;
+    margin-bottom: 25px;
+  }
+
+  /* FLOATING INPUTS */
+  .floating-group {
+    position: relative;
+    margin-bottom: 18px;
+  }
+
+  .floating-group input {
+    width: 100%;
+    padding: 12px 38px 12px 10px;
+    background: rgba(255,255,255,0.65);
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  .floating-group label {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    color: #555;
+    font-size: 13px;
+    pointer-events: none;
+    transform: translateY(-50%);
+    transition: 0.25s ease;
+  }
+
+  .floating-group input:focus + label,
+  .floating-group input:not(:placeholder-shown) + label {
+    top: 6px;
+    font-size: 11px;
+    color: #0095f6;
+  }
+
+  .floating-group input:focus {
+    outline: none;
+    border-color: #0095f6;
+    box-shadow: 0 0 0 1px #0095f6;
+  }
+
+  /* SHOW / HIDE PASSWORD */
+  .toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.7;
+    user-select: none;
+  }
+
+  .toggle-password:hover {
+    opacity: 1;
+  }
+
+  /* BUTTON */
+  .glass-btn {
+    background: linear-gradient(135deg, #0095f6, #1877f2);
+    border: none;
+    padding: 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: white;
+  }
+
+  .register-link {
+    margin-top: 15px;
+    font-size: 14px;
+  }
+</style>
+
+<div class="glass-card">
+  <h3 class="title">Login to Surticlone</h3>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- USERNAME -->
+    <div class="floating-group">
+      <input type="text" name="username" id="id_username" class="form-control" placeholder=" ">
+      <label>Username</label>
     </div>
+
+    <!-- PASSWORD -->
+    <div class="floating-group">
+      <input type="password" name="password" id="id_password" class="form-control" placeholder=" ">
+      <label>Password</label>
+      <span class="toggle-password" onclick="togglePassword()">👁️</span>
+    </div>
+
+    <button type="submit" class="btn glass-btn w-100">
+      Login
+    </button>
+  </form>
+
+  <div class="register-link">
+    Don’t have an account?
+    <a href="{% url 'register' %}" class="fw-semibold text-decoration-none">
+      Register
+    </a>
   </div>
 </div>
 
-<style>
-body {
-  background: linear-gradient(135deg, #fdfbfb, #ebedee, #a0c8c3, #2c3e50);
-  background-size: 400% 400%;
-  animation: gradientShift 10s ease infinite;
+<script>
+function togglePassword() {
+  const passwordInput = document.getElementById("id_password");
+  const icon = document.querySelector(".toggle-password");
+
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    icon.textContent = "🙈";
+  } else {
+    passwordInput.type = "password";
+    icon.textContent = "👁️";
+  }
 }
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-.card {
-  backdrop-filter: blur(10px);
-}
-</style>
+</script>
+
 {% endblock %}

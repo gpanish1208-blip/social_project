@@ -3,10 +3,61 @@
 {% block title %}Edit Profile - {{ user.username }}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-4">
-  <div class="col-md-6">
-    <div class="card p-4 shadow-sm">
-      <h5 class="mb-3">Edit Profile</h5>
+<style>
+  body {
+    background: black; /* subtle gradient */
+    color: #fff;
+    min-height: 100vh;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.1); /* semi-transparent */
+    backdrop-filter: blur(15px); /* glass effect */
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  label {
+    font-weight: 600;
+    color: #f0f0f0;
+  }
+
+  .form-control, textarea {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+  }
+
+  .form-control:focus, textarea:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-color: #0d6efd;
+    box-shadow: none;
+  }
+
+  .btn-primary {
+    background-color: #0d6efd;
+    border: none;
+    transition: 0.3s;
+  }
+
+  .btn-primary:hover {
+    background-color: #0b5ed7;
+  }
+
+  .text-danger {
+    color: #f56565 !important;
+  }
+</style>
+
+<div class="row justify-content-center mt-5">
+  <div class="col-md-6 col-sm-10">
+    <div class="glass-card">
+      <h4 class="mb-4 text-center">Edit Profile</h4>
       <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.non_field_errors }}
@@ -29,7 +80,7 @@
           {% endfor %}
         </div>
 
-        <button class="btn btn-primary w-100" type="submit">Save Changes</button>
+        <button class="btn btn-primary w-100 mt-3" type="submit">Save Changes</button>
       </form>
     </div>
   </div>

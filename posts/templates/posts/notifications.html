@@ -7,17 +7,18 @@
 <style>
 /* ===== Animated Background (same as login & home) ===== */
 body {
-    background: linear-gradient(135deg, #fdfbfb, #ebedee, #a0c8c3, #2c3e50);
+    background:black;
     background-size: 400% 400%;
+    color: white;
     animation: gradientShift 10s ease infinite;
     font-family: 'Poppins', sans-serif;
 }
 
-@keyframes gradientShift {
+/* @keyframes gradientShift {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
-}
+} */
 
 /* ===== Glass Notifications Card ===== */
 .glass-card {
@@ -53,11 +54,11 @@ h3 {
 
 <div class="container mt-4">
 
-    <h3 class="mb-4 text-black">Notifications</h3>
+    <h3 class="mb-4 text-white">Notifications</h3>
 
     {% if reports %}
         {% for r in reports %}
-            <div class="glass-card mb-3 text-black">
+            <div class="glass-card mb-3 text-white">
 
                 <!-- Post Caption -->
                 <p><strong>Post:</strong> {{ r.post.caption }}</p>
@@ -78,16 +79,16 @@ h3 {
                     {% if r.reply %}
                         {{ r.reply }}
                     {% else %}
-                        <span class="text-muted">No reply yet.</span>
+                        <span class="text-white">No reply yet.</span>
                     {% endif %}
                 </p>
 
-                <small class="text-muted">Date: {{ r.created_at }}</small>
+                <small class="text-white">Date: {{ r.created_at }}</small>
             </div>
         {% endfor %}
 
     {% else %}
-        <p class="text-black">No notifications.</p>
+        <p class="text-white">No notifications.</p>
     {% endif %}
 
 </div>

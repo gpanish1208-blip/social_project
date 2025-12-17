@@ -1,5 +1,5 @@
 {% extends 'posts/base.html' %}
-{% load static %}
+{% load static widget_tweaks %}
 {% block title %}Create Post - InstaClone{% endblock %}
 
 {% block content %}
@@ -7,17 +7,19 @@
 <style>
 /* ===== Animated Background ===== */
 body {
-  background: linear-gradient(135deg, #fdfbfb, #ebedee, #a0c8c3, #2c3e50);
-  background-size: 400% 400%;
-  animation: gradientShift 10s ease infinite;
+  background: black;
+  /* animation: gradientShift 10s ease infinite; */
   font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
-@keyframes gradientShift {
+/* @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
-}
+} */
 
 /* ===== Glass Card ===== */
 .glass-card {
@@ -28,6 +30,8 @@ body {
   border: 1px solid rgba(255,255,255,0.35);
   box-shadow: 0 4px 14px rgba(0,0,0,0.15);
   transition: 0.3s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .glass-card:hover {
@@ -41,6 +45,7 @@ body {
   border-radius: 12px;
   padding: 10px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .glass-input:focus {
@@ -53,7 +58,23 @@ body {
 h5 {
   font-weight: 600;
   color: #2c3e50;
+  text-align: center;
 }
+
+/* Buttons */
+.btn-glass {
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.4);
+  backdrop-filter: blur(8px);
+  color: #2c3e50;
+  transition: 0.3s;
+}
+
+.btn-glass:hover {
+  background: rgba(255,255,255,0.4);
+}
+
+/* Input & textarea */
 input, textarea {
     border-radius: 10px !important;
     padding: 10px !important;
@@ -62,38 +83,58 @@ input, textarea {
     border: 1px solid rgba(255,255,255,0.3);
 }
 
+/* ===== Mobile adjustments ===== */
+@media (max-width: 576px) {
+  .glass-card {
+    padding: 15px;
+    margin: 0 10px;
+  }
+
+  h5 {
+    font-size: 1.2rem;
+  }
+
+  .btn-glass {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+
+  input, textarea {
+    font-size: 0.9rem;
+  }
+}
 </style>
 
-<div class="row justify-content-center mt-5">
-  <div class="col-md-6">
+<div class="row justify-content-center mt-5 mb-5">
+  <div class="col-sm-10 col-md-6 col-lg-5">
     <div class="glass-card">
 
-      <h5 class="mb-3 text-center">Create a New Post</h5>
+      <h5 class="mb-3 text-white">Create a New Post</h5>
 
       <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.non_field_errors }}
 
         <!-- Image Input -->
-        <div class="mb-3">
+        <div class="mb-3 text-white">
           {{ form.image.label_tag }}
-          {{ form.image }}
+          {{ form.image|add_class:"glass-input" }}
           {% for error in form.image.errors %}
             <div class="text-danger small">{{ error }}</div>
           {% endfor %}
         </div>
 
         <!-- Caption Input -->
-        <div class="mb-3">
+        <div class="mb-3 text-white">
           {{ form.caption.label_tag }}
-          {{ form.caption }}
+          {{ form.caption|add_class:"glass-input" }}
           {% for error in form.caption.errors %}
             <div class="text-danger small">{{ error }}</div>
           {% endfor %}
         </div>
 
         <!-- Submit Button -->
-        <button class="btn btn-primary w-100" type="submit">Post</button>
+        <button class="btn btn-glass w-100 text-white" type="submit">Post</button>
 
       </form>
     </div>

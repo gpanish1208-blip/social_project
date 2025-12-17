@@ -14,13 +14,15 @@ from django.contrib.auth.forms import AuthenticationForm
 def register_view(request):
     """User registration"""
     form = RegisterForm()
+    
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            Profile.objects.create(user=user)  # create profile for new user
+            user = form.save()    # creates the user only (profile will be auto-created by signal)
+
             messages.success(request, "Account created successfully! Please log in.")
             return redirect('login')
+
     return render(request, 'posts/register.html', {'form': form})
 
 

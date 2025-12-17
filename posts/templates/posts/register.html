@@ -1,46 +1,143 @@
 {% extends 'posts/base.html' %}
 {% load static %}
+
 {% block content %}
-<div class="container my-5" style="max-width:400px;">
-    <h3>Register</h3>
+<style>
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #fdfbfb, #ebedee, #cfd9df);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* GLASS CARD */
+  .glass-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 35px 30px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.35);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.12);
+    text-align: center;
+  }
+
+  .insta-logo {
+    font-family: 'Pacifico', cursive;
+    font-size: 40px;
+    margin-bottom: 30px;
+    color: #262626;
+  }
+
+  /* FLOATING INPUT */
+  .floating-group {
+    position: relative;
+    margin-bottom: 15px;
+  }
+
+  .floating-group input {
+    width: 100%;
+    padding: 12px 10px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  .floating-group label {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    color: #555;
+    font-size: 13px;
+    pointer-events: none;
+    transform: translateY(-50%);
+    transition: 0.25s ease;
+    background: transparent;
+  }
+
+  /* FLOAT EFFECT */
+  .floating-group input:focus + label,
+  .floating-group input:not(:placeholder-shown) + label {
+    top: 5px;
+    font-size: 11px;
+    color: #0095f6;
+  }
+
+  .floating-group input:focus {
+    outline: none;
+    border-color: #0095f6;
+    box-shadow: 0 0 0 1px #0095f6;
+  }
+
+  /* BUTTON */
+  .glass-btn {
+    margin-top: 10px;
+    background: linear-gradient(135deg, #0095f6, #1877f2);
+    border: none;
+    padding: 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: white;
+  }
+
+  .login-box {
+    margin-top: 12px;
+    padding: 18px;
+    background: rgba(255,255,255,0.3);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    .glass-card {
+      margin: 0 15px;
+    }
+  }
+</style>
+
+<div>
+  <div class="glass-card">
+    <div class="insta-logo">Surticlone</div>
+
     <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Register</button>
-    </form>
-    <p class="mt-2">Already have an account? <a href="{% url 'login' %}">Login</a></p>
-</div>
-{% endblock %}
+      {% csrf_token %}
 
-
-
-<div class="d-flex align-items-center gap-2 mt-2">
-
-        Like
-        <button 
-          class="glass-btn like-btn {% if user in post.likes.all %}active{% endif %}" 
-          data-post-id="{{ post.pk }}">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="{% if user in post.likes.all %}red{% else %}none{% endif %}" 
-               stroke="red" viewBox="0 0 24 24" width="20" height="20">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
-                     2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81
-                     14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0
-                     3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-          <span class="like-count">{{ post.likes.count }}</span>
-        </button>
-
-        <!-- Comment -->
-        <button 
-          class="glass-btn comment-btn" 
-          data-post-id="{{ post.pk }}" 
-          data-bs-toggle="modal" 
-          data-bs-target="#commentModal">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" 
-               viewBox="0 0 24 24" width="20" height="20">
-            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-          </svg>
-          <span class="comment-count">{{ post.comments.count }}</span>
-        </button>
-
+      <div class="floating-group">
+        {{ form.username }}
+        <label>Username</label>
       </div>
+
+      <div class="floating-group">
+        {{ form.password1 }}
+        <label>Password</label>
+      </div>
+
+      <div class="floating-group">
+        {{ form.password2 }}
+        <label>Confirm Password</label>
+      </div>
+
+      <button type="submit" class="btn glass-btn w-100">
+        Sign up
+      </button>
+    </form>
+
+    <small class="d-block mt-3 text-muted">
+      By signing up, you agree to our Terms, Privacy Policy and Cookies Policy.
+    </small>
+  </div>
+
+  <div class="login-box">
+    Have an account?
+    <a href="{% url 'login' %}" class="fw-semibold text-decoration-none">
+      Log in
+    </a>
+  </div>
+</div>
+
+{% endblock %}
