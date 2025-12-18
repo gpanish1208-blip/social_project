@@ -39,8 +39,12 @@ urlpatterns = [
     path('story/view/<int:user_id>/', views.view_story, name='view_story'),
 
     # Replace any unfollow URLs with toggle_follow
-path("profile/<str:username>/follow/", views.toggle_follow, name="toggle_follow"),
+    path("profile/<str:username>/follow/", views.toggle_follow, name="toggle_follow"),
     path("follow/<str:username>/", views.toggle_follow, name="toggle_follow"),
+
+    path('comment/delete/<int:comment_id>/', views.delete_comment, name='delete_comment'),
+
+
 
 
 

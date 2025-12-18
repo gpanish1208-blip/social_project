@@ -95,18 +95,51 @@
       </div>
 
       <!-- Caption and comments -->
-      <div class="mt-2"><strong>{{ post.user.username }}</strong> {{ post.caption }}</div>
-      {% if post.comments.all %}
-      <div class="mt-3 small text-white">
-        {% for comment in post.comments.all|slice:":3" %}
-        <div><strong>{{ comment.user.username }}</strong> {{ comment.content }}</div>
-        {% endfor %}
-        {% if post.comments.count > 3 %}
-        <a href="{% url 'post_detail' post.pk %}" class="small text-decoration-none">View all {{ post.comments.count }}
-          comments</a>
+<!-- COMMENTS -->
+<!-- COMMENTS -->
+<div class="glass-comments">
+
+  {% if post.comments.count > 2 %}
+    <button class="toggle-comments-btn"
+            onclick="toggleComments('{{ post.pk }}', this)">
+      View comments ({{ post.comments.count }})
+    </button>
+  {% endif %}
+
+  <div class="comments-list {% if post.comments.count > 2 %}d-none{% endif %}"
+       id="comments-{{ post.pk }}">
+
+    {% for comment in post.comments.all|slice:"-2:" %}
+      <div class="comment-item" id="comment-{{ comment.id }}">
+        <div>
+          <strong>{{ comment.user.username }}</strong>
+          <span>{{ comment.content }}</span>
+        </div>
+
+        {% if comment.user == user %}
+          <button type="button"
+                  class="delete-comment-btn"
+                  onclick="deleteComment({{ comment.id }})">
+            🗑
+          </button>
         {% endif %}
       </div>
-      {% endif %}
+    {% empty %}
+      <p class="no-comments">No comments yet</p>
+    {% endfor %}
+
+    {% if post.comments.count > 2 %}
+      <a href="{% url 'post_detail' post.pk %}"
+         class="small text-info text-decoration-none d-block mt-1">
+        View all {{ post.comments.count }} comments
+      </a>
+    {% endif %}
+
+  </div>
+</div>
+
+
+
     </div>
 
     <!-- Report Modal -->
@@ -138,24 +171,44 @@
 
 <!-- Comment Modal -->
 <div class="modal fade" id="commentModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content glass-modal">
-      <div class="modal-header">
-        <h5 class="modal-title">Add a Comment</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content glass-comment-modal">
+
+      <div class="modal-header border-0 pb-1">
+        <h6 class="modal-title fw-semibold">Add a comment</h6>
+        <button type="button" class="btn-close btn-close-white"
+                data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        <textarea id="commentContent" class="form-control" placeholder="Write something..."></textarea>
+
+      <div class="modal-body pt-2">
+        <div class="floating-comment">
+          <textarea id="commentContent"
+                    rows="3"
+                    placeholder=" "
+                    class="form-control"></textarea>
+          <label>Write a comment…</label>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="sendCommentBtn">Post</button>
+
+      <div class="modal-footer border-0 pt-0">
+        <button type="button"
+                class="btn btn-outline-light btn-sm"
+                data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button"
+                class="btn btn-primary btn-sm px-4"
+                id="sendCommentBtn">
+          Post
+        </button>
       </div>
+
     </div>
   </div>
 </div>
 
-<!-- Scripts -->
+
+
 <script>
   function submitReport(postId) {
     const reason = document.getElementById(`reportReason${postId}`).value.trim();
@@ -243,9 +296,41 @@
         bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();
       });
   });
-</script>
+ function toggleComments(postId, btn) {
+  const commentsBox = document.getElementById(`comments-${postId}`);
 
-<!-- CSS -->
+  if (commentsBox.classList.contains('d-none')) {
+    commentsBox.classList.remove('d-none');
+    btn.innerText = "Hide comments";
+  } else {
+    commentsBox.classList.add('d-none');
+    btn.innerText = "View comments";
+  }
+}
+
+function deleteComment(commentId) {
+  if (!confirm("Delete this comment?")) return;
+
+  fetch(`/comment/delete/${commentId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrftoken,
+      "X-Requested-With": "XMLHttpRequest"
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      const el = document.getElementById(`comment-${commentId}`);
+      if (el) el.remove();
+    } else {
+      alert("Failed to delete comment");
+    }
+  });
+}
+</script>
+   
+
 <style>
 /* ==========================
    GLOBAL
@@ -349,10 +434,16 @@ body {
    POST IMAGE SIZE FIX
 =========================== */
 .post-image {
-    width: 100%;
-    height: auto !important;   /* ✔ keep natural height */
-    object-fit: contain !important;  /* ✔ no crop */
-    border-radius: 10px;
+  width: 100%;
+  aspect-ratio: 1 / 1;   /* Instagram square */
+  overflow: hidden;
+  background: #000;
+}
+
+.post-image img {
+  width: 100%;
+  height: 50%;
+  object-fit: cover;   /* KEY LINE */
 }
 
 /* MOBILE FIX */
@@ -437,6 +528,128 @@ body {
     background: none !important;
     border: none !important;
     box-shadow: none !important;
+}
+/* ===== GLASS COMMENT DISPLAY ===== */
+.glass-comments {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+.comments-list {
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.comment-item {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  color: white;
+}
+
+.comment-item strong {
+  margin-right: 5px;
+}
+
+.no-comments {
+  font-size: 13px;
+  color: #ccc;
+}
+/* ===== SHOW / HIDE COMMENTS ===== */
+.toggle-comments-btn {
+  background: none;
+  border: none;
+  color: #9ecbff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+.toggle-comments-btn:hover {
+  text-decoration: underline;
+}
+
+/* ==========================
+   GLASS COMMENT MODAL
+=========================== */
+.glass-comment-modal {
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: white;
+}
+
+/* HEADER */
+.glass-comment-modal .modal-title {
+  color: white;
+}
+
+/* FLOATING TEXTAREA */
+.floating-comment {
+  position: relative;
+}
+
+.floating-comment textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.65);
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  color: #000;
+  resize: none;
+}
+
+.floating-comment textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #0095f6;
+}
+
+.floating-comment label {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  font-size: 14px;
+  color: #555;
+  pointer-events: none;
+  transition: 0.25s ease;
+}
+
+/* FLOAT EFFECT */
+.floating-comment textarea:focus + label,
+.floating-comment textarea:not(:placeholder-shown) + label {
+  top: -8px;
+  font-size: 12px;
+  color: #0095f6;
+  background: rgba(0,0,0,0.6);
+  padding: 0 6px;
+  border-radius: 6px;
+}
+.comment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.delete-comment-btn {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.delete-comment-btn:hover {
+  opacity: 0.7;
 }
 
 

@@ -136,6 +136,7 @@ body {
 .feed-inner {
   display: flex;
   flex-direction: column;
+  /* margin-top: 35px; */
   gap: 20px;
 }
 
@@ -407,10 +408,10 @@ body {
     <div class="offcanvas-body p-0">
       <div class="list-group list-group-flush" >
         <a class="list-group-item list-group-item-action text-black" href="{% url 'home' %}">Home</a>
-        <button class="list-group-item list-group-item-action"
+        <!-- <button class="list-group-item list-group-item-action"
           onclick="document.getElementById('searchInput')?.focus()">Search</button>
         <a class="list-group-item list-group-item-action text-black" href="#">Explore</a>
-        <a class="list-group-item list-group-item-action text-black" href="#">Reels</a>
+        <a class="list-group-item list-group-item-action text-black" href="#">Reels</a> -->
 
         <a class="list-group-item list-group-item-action text-black" href="{% url 'notifications' %}">
           Notifications

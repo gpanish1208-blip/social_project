@@ -4,50 +4,52 @@
 
 {% block content %}
 <style>
-  body {
-  background: linear-gradient(135deg, #fdfbfb, #ebedee, #a0c8c3, #2c3e50);
-  background-size: 400% 400%;
-  animation: gradientShift 10s ease infinite;
-  font-family: 'Poppins', sans-serif;
+body {
+  font-family: Arial, sans-serif;
+  background: black;
+  color: white;
 }
+.feed-inner{
 
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  margin-top: 35px;
 }
+/* 
+ .card-img-top {
+  
+    width: 84%;
+}  */
 </style>
 <div class="row justify-content-center mt-4">
-  <div class="col-md-8">
-    <div class="card border-0">
+  <div class="col-md-8 d-flex align-items-center">
+    <div class="card border-0 bg-black">
       <!-- Post header -->
-      <div class="card-header d-flex align-items-center bg-white border-bottom-0">
+      <div class="card-header d-flex align-items-center bg-black border-bottom-0">
         <img src="{{ post.user.profile.profile_image.url }}" class="rounded-circle me-3" width="50" height="50" alt="pf">
         <div>
-          <a href="{% url 'profile' post.user.username %}" class="text-dark fw-bold">{{ post.user.username }}</a>
-          <div class="text-muted small">{{ post.created_at|date:"M d, Y H:i" }}</div>
+          <a href="{% url 'profile' post.user.username %}" class="text-white fw-bold">{{ post.user.username }}</a>
+          <div class="text-white small">{{ post.created_at|date:"M d, Y H:i" }}</div>
         </div>
       </div>
 
       <!-- Post image -->
-      <img src="{{ post.image.url }}" class="card-img-top img-fluid" alt="Post Image">
+      <img src="{{ post.image.url }}" class="card-img-top img-fluid " alt="Post Image">
 
       <!-- Likes -->
-      <div class="card-body py-2">
+      <div class="card-body py-2 bg-black text-white">
         <form method="POST" action="{% url 'like_post' post.pk %}" class="d-inline">{% csrf_token %}
-          <button class="btn btn-sm btn-light">❤️ {{ post.likes.count }}</button>
+          <button class="btn btn-sm btn-light bg-black text-white" style="border: none;">❤️ {{ post.likes.count }}</button>
         </form>
       </div>
 
       <!-- Caption -->
-      <div class="card-body pt-0 pb-2">
+      <div class="card-body pt-0 pb-2 bg-black text-white">
         <strong>{{ post.user.username }}</strong> {{ post.caption }}
       </div>
 
-      <hr class="my-1">
+      <!-- <hr class="my-1"> -->
 
       <!-- Comments -->
-      <div class="card-body pt-0 pb-2">
+      <div class="card-body pt-0 pb-2 bg-black text-white">
         <h6 class="mb-2">Comments ({{ post.comments.count }})</h6>
         <div class="mb-2">
           {% for comment in post.comments.all %}

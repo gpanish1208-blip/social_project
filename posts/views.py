@@ -147,6 +147,20 @@ def add_comment(request, pk):
         return JsonResponse({'comments_count': post.comments.count()})
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+@login_required
+def delete_comment(request, comment_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid"}, status=400)
+
+    comment = get_object_or_404(Comment, id=comment_id)
+
+    if comment.user != request.user:
+        return JsonResponse({"error": "Forbidden"}, status=403)
+
+    comment.delete()
+    return JsonResponse({"status": "success"})
+
+
 
 # -------------------- PROFILE --------------------
 
