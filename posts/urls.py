@@ -44,9 +44,7 @@ urlpatterns = [
 
     path('comment/delete/<int:comment_id>/', views.delete_comment, name='delete_comment'),
 
-
-
-
+    path('settings/', views.settings_view, name='settings'),
 
 
 ]

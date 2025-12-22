@@ -290,7 +290,7 @@ body {
 @media (min-width: 768px) {
     .col-md-8 {
         flex: 0 0 auto;
-        width: 30.666667%;
+        width: 45.666667%;
     }
 }
 .logo-mobile{
@@ -298,6 +298,51 @@ body {
     font-size: 20px;
     color: #111;
 }
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+.sidebar-btn {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.sidebar-btn i {
+  margin-right: 0.75rem;
+  font-size: 1.2rem;
+}
+.sidebar-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+}
+@media (max-width: 768px) {
+  .sidebar-menu {
+    flex-direction: row;
+    justify-content: space-around;
+  }
+  .sidebar-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 0.5rem;
+  }
+  .sidebar-btn span {
+    display: none;
+  }
+  .sidebar-btn i {
+    margin-right: 0;
+  }
+} 
 
 
 
@@ -319,10 +364,10 @@ body {
     </button>
   </div>
 <!-- MOBILE TOPBAR -->
-<div class="mobile-topbar d-lg-none">
+<div class="mobile-topbar d-lg-none bg-black">
 
     <!-- hamburger -->
-    <button class="btn btn-light p-2 shadow-sm" data-bs-toggle="offcanvas"
+    <button class="btn btn-light p-2 shadow-sm bg-white" data-bs-toggle="offcanvas"
         data-bs-target="#mobileSidebar">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M3 6h18M3 12h18M3 18h18"
@@ -331,7 +376,7 @@ body {
     </button>
 
     <!-- MOBILE LOGO (Added) -->
-    <h4 class="logo-mobile ms-3" style="margin-bottom: 0px;">Surticlone</h4>
+    <h4 class="logo-mobile ms-3 text-white" style="margin-bottom: 0px;">Surticlone</h4>
 
 </div>
 
@@ -342,17 +387,36 @@ body {
 
 </div>
 
-  <!-- LEFT SIDEBAR -->
+
   <!-- LEFT SIDEBAR -->
 <div id="sidebar" class="sidebar"  >
   <h4 class="logo">Surticlone</h4>
   
 
-  <a href="{% url 'home' %}" style="font-size: large;"><i class="fa-sharp-duotone fa-solid fa-house" style="padding-right: 10px;"></i>Home</a>
+  <div class="sidebar-menu">
+  <a href="{% url 'home' %}" class="sidebar-btn">
+    <i class="fas fa-home" style="padding-left: 10px;"></i><span>Home</span>
+  </a>
+  <a href="{% url 'notifications' %}" class="sidebar-btn">
+    <i class="fas fa-bell" style="padding-left: 10px;"></i><span>Notifications</span>
+  </a>
+  <a href="{% url 'create_post' %}" class="sidebar-btn">
 
-  <a href="{% url 'notifications' %}" style="font-size: large;"><i class="fa-etch fa-solid fa-bell" style="padding-right: 10px;"></i>Notifications</a>
+    <i class="fas fa-plus-circle" style="padding-left: 10px;"></i><span>Create</span>
+  </a>
 
-  <a href="{% url 'create_post' %}" style="font-size: large;"><i class="fa-sharp-duotone fa-solid fa-circle-plus" style="padding-right: 10px;"></i>Create</a>
+  <div class="settings-wrapper">
+  <button class="sidebar-btn" onclick="toggleTheme()">
+  <i class="fas fa-cog"></i>
+  <span>Settings</span>
+</button>
+
+
+ 
+</div>
+
+</div>
+
 
   {% if user.is_authenticated %}
       <!-- PROFILE SECTION (Instagram style) -->
@@ -380,7 +444,7 @@ body {
       </div>
 
       <!-- LOGOUT BUTTON -->
-      <form method="POST" action="{% url 'logout' %}" style="padding: 10px; padding-top: 485px;">
+      <form method="POST" action="{% url 'logout' %}" style="padding: 10px; padding-top: 300px;">
         {% csrf_token %}
         <button type="submit" class="btn btn-outline-danger w-100">
           Logout
@@ -401,45 +465,64 @@ body {
 
   <!-- MOBILE OFFCANVAS SIDEBAR (left slide) -->
   <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">Menu</h5>
-      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body p-0">
-      <div class="list-group list-group-flush" >
-        <a class="list-group-item list-group-item-action text-black" href="{% url 'home' %}">Home</a>
-        <!-- <button class="list-group-item list-group-item-action"
-          onclick="document.getElementById('searchInput')?.focus()">Search</button>
-        <a class="list-group-item list-group-item-action text-black" href="#">Explore</a>
-        <a class="list-group-item list-group-item-action text-black" href="#">Reels</a> -->
+  <div class="offcanvas-header bg-black text-white">
+    <h5 class="offcanvas-title">Menu</h5>
+    <button type="button" class="btn-close text-reset bg-white" data-bs-dismiss="offcanvas"></button>
+  </div>
 
-        <a class="list-group-item list-group-item-action text-black" href="{% url 'notifications' %}">
-          Notifications
-        </a>
+  <div class="offcanvas-body p-0 bg-black text-white">
+    <div class="list-group list-group-flush">
 
-        <a class="list-group-item list-group-item-action text-black" href="{% url 'create_post' %}">Create</a>
-        <div class="profile-compact">
-          {% if user.is_authenticated %}
-          <a href="{% url 'profile' user.username %}" class="d-flex align-items-center gap-2 text-decoration-none">
-            <img src="{{ user.profile.profile_image.url }}" class="profile-pic" alt="pf">
-            <div>
-              <div style="font-weight:600">{{ user.username }}</div>
-              <div class="small-muted">View profile</div>
-            </div>
-          </a>
-          <div class="mt-3">
-            <form method="POST" action="{% url 'logout' %}">{% csrf_token %}
-              <button class="btn btn-outline-secondary w-100" type="submit">Logout</button>
-            </form>
-          </div>
-          {% else %}
-          <a class="list-group-item list-group-item-action" href="{% url 'login' %}">Login</a>
-          <a class="list-group-item list-group-item-action" href="{% url 'register' %}">Register</a>
-          {% endif %}
+      <a class="list-group-item list-group-item-action  bg-black text-white" href="{% url 'home' %}">
+        Home
+      </a>
+
+      <a class="list-group-item list-group-item-action  bg-black text-white" href="{% url 'notifications' %}">
+        Notifications
+      </a>
+
+      <a class="list-group-item list-group-item-action  bg-black text-white" href="{% url 'create_post' %}">
+        Create
+      </a>
+
+      <!-- SETTINGS -->
+      <div class="list-group-item  bg-black text-white">
+        <strong>Settings</strong>
+        <div class="d-flex gap-2 mt-2">
         </div>
       </div>
+
+      {% if user.is_authenticated %}
+      <div class="list-group-item  bg-black text-white">
+        <a href="{% url 'profile' user.username %}"
+           class="d-flex align-items-center gap-2 text-decoration-none">
+          <img src="{{ user.profile.profile_image.url }}"
+               class="profile-pic" alt="pf">
+          <div>
+            <div style="font-weight:600">{{ user.username }}</div>
+            <div class="small text-white">View profile</div>
+          </div>
+        </a>
+
+        <form method="POST" action="{% url 'logout' %}" class="mt-3">
+          {% csrf_token %}
+          <button class="btn btn-outline-primary w-100" type="submit">
+            Logout
+          </button>
+        </form>
+      </div>
+      {% else %}
+      <a class="list-group-item list-group-item-action" href="{% url 'login' %}">
+        Login
+      </a>
+      <a class="list-group-item list-group-item-action" href="{% url 'register' %}">
+        Register
+      </a>
+      {% endif %}
+
     </div>
   </div>
+</div>
 
   <!-- MAIN LAYOUT: center feed + right column -->
   <div class="main-inner">
@@ -452,7 +535,7 @@ body {
         {% endfor %}
         {% endif %}
 
-        <div class="feed-inner">
+        <div class="feed-inner pt-5 pe-3">
           {% block content %}
           <!-- your posts should render here (post-card markup) -->
           {% endblock %}
@@ -530,45 +613,43 @@ body {
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- keep your CSRF helper & like/comment AJAX if present previously -->
-  <script>
-    // CSRF token helper (keeps existing functionality)
-    function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
-          }
-        }
+ <script>
+/* ===============================
+   CSRF TOKEN HELPER (GLOBAL)
+================================ */
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
       }
-      return cookieValue;
     }
-    const csrftoken = getCookie('csrftoken');
+  }
+  return cookieValue;
+}
 
-    // Like/comment handlers — keep your existing handlers (if any) here.
-    // Example: document.querySelectorAll('.like-btn').forEach(...)
+// Declare ONCE
+const csrftoken = getCookie('csrftoken');
 
-    /* optional: auto-close mobile offcanvas when clicking a link (small UX nicety) */
-    document.addEventListener('click', function (e) {
-      const offcanvasEl = document.getElementById('mobileSidebar');
-      if (!offcanvasEl) return;
-      const bs = bootstrap.Offcanvas.getInstance(offcanvasEl);
-      if (!bs) return;
-      // if a link inside offcanvas is clicked, close it
-      if (e.target.closest('.offcanvas') && e.target.closest('a')) {
-        bs.hide();
-      }
-    });
+/* ===============================
+   AUTO-CLOSE BOOTSTRAP OFFCANVAS
+================================ */
+document.addEventListener('click', function (e) {
+  const offcanvasEl = document.getElementById('mobileSidebar');
+  if (!offcanvasEl) return;
 
-    function toggleMenu() {
-      document.getElementById("sidebar").classList.toggle("active");
-      document.getElementById("overlay").classList.toggle("show");
-    }
-  </script>
+  const bsInstance = bootstrap.Offcanvas.getInstance(offcanvasEl);
+  if (!bsInstance) return;
+
+  if (e.target.closest('.offcanvas') && e.target.closest('a')) {
+    bsInstance.hide();
+  }
+});
+</script>
 
 
 

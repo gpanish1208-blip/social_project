@@ -1,0 +1,13 @@
+# Django
+db.sqlite3
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Media & static cache
+/staticfiles/
+
+# OS files
+.DS_Store
+Thumbs.db

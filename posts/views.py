@@ -329,4 +329,6 @@ def toggle_follow(request, username):
     return redirect("profile", username=username)
 
 
-
+@login_required
+def settings_view(request):
+    return render(request, 'posts/settings.html')
