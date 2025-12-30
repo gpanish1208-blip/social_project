@@ -7,6 +7,9 @@ from django.contrib import messages
 from .models import Post, Profile, Comment, Report, Story
 from .forms import RegisterForm, PostForm, ProfileForm, StoryForm
 from django.contrib.auth.forms import AuthenticationForm
+from django.utils import timezone
+from datetime import timedelta
+
 
 
 # -------------------- USER AUTH --------------------
@@ -53,10 +56,22 @@ def logout_view(request):
 @login_required
 def home_feed(request):
     posts = Post.objects.all().order_by('-created_at')
-    profiles = Profile.objects.all() 
+    profiles = Profile.objects.select_related('user')
+
+    # Active stories (last 24 hours)
+    active_stories = Story.objects.filter(
+        created_at__gte=timezone.now() - timedelta(hours=24)
+    )
+
+    # ✅ USERS WHO HAVE ACTIVE STORIES
+    active_story_users = set(
+        active_stories.values_list('user_id', flat=True)
+    )
+
     return render(request, 'posts/home.html', {
         'posts': posts,
         'profiles': profiles,
+        'active_story_users': active_story_users,  # ✅ PASS THIS
     })
 
 
@@ -260,30 +275,59 @@ def notifications(request):
 
 @login_required
 def upload_story(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = StoryForm(request.POST, request.FILES)
         if form.is_valid():
             story = form.save(commit=False)
             story.user = request.user
             story.save()
-            messages.success(request, "Story uploaded!")
             return redirect('home')
     else:
         form = StoryForm()
     return render(request, 'posts/upload_story.html', {'form': form})
 
 
+
+
+
 @login_required
 def view_story(request, user_id):
     user = get_object_or_404(User, id=user_id)
-    stories = Story.objects.filter(user=user)
 
-    active_stories = [s for s in stories if not s.is_expired]
+    stories = Story.objects.filter(
+        user=user,
+        created_at__gte=timezone.now() - timedelta(hours=24)
+    ).order_by('created_at')
+
+    # 👁️ ADD VIEW TRACKING
+    for story in stories:
+        if request.user != story.user:
+            story.views.add(request.user)
 
     return render(request, 'posts/view_story.html', {
-        'stories': active_stories,
+        'stories': stories,
         'story_user': user,
     })
+
+
+
+@login_required
+def delete_story(request, story_id):
+    story = get_object_or_404(Story, id=story_id)
+
+    # Security check: only owner can delete
+    if story.user != request.user:
+        messages.error(request, "You are not allowed to delete this story.")
+        return redirect('home')
+
+    if request.method == "POST":
+        story.delete()
+        messages.success(request, "Story deleted successfully.")
+        return redirect('home')
+
+    return redirect('home')
+
+
 
 # -------------------- FOLLOW --------------------
 

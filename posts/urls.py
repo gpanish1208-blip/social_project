@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+
+
 urlpatterns = [
     # Home
     path('', views.home_feed, name='home'),
@@ -35,8 +37,13 @@ urlpatterns = [
 
     path('notifications/', views.notifications, name='notifications'),
 
+
+    # story
     path('story/upload/', views.upload_story, name='upload_story'),
-    path('story/view/<int:user_id>/', views.view_story, name='view_story'),
+    path('story/<int:user_id>/', views.view_story, name='view_story'),
+    path('story/delete/<int:story_id>/', views.delete_story, name='delete_story'),
+
+
 
     # Replace any unfollow URLs with toggle_follow
     path("profile/<str:username>/follow/", views.toggle_follow, name="toggle_follow"),

@@ -1,20 +1,204 @@
 {% extends 'posts/base.html' %}
 {% load static %}
-{% block content %}
-<div class="container mt-4 text-center">
 
-    <h4>{{ story_user.username }}'s Story</h4>
+{% block content %}
+<style>
+/* ===============================
+   STORY VIEW – INSTAGRAM STYLE
+================================= */
+
+body {
+  background: #000;
+}
+
+/* MAIN CONTAINER */
+.story-view-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 85vh;
+}
+
+/* STORY CONTAINER */
+.story-container {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  height: 75vh;
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* STORY SLIDE */
+.story-slide {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.story-slide.active {
+  display: block;
+}
+
+/* STORY IMAGE */
+.story-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+/* HEADER (USERNAME + TIME) */
+.story-header {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  z-index: 10;
+}
+
+.story-header img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.story-header small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* DELETE BUTTON */
+.delete-story-form {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+.delete-story-btn {
+  background: rgba(0,0,0,0.6);
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  border-radius: 50%;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.delete-story-btn:hover {
+  background: red;
+}
+
+/* VIEW COUNT */
+.story-views {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  z-index: 10;
+}
+
+/* TAP ZONES (LEFT / RIGHT) */
+.tap-zone {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  z-index: 5;
+}
+
+.tap-zone.left {
+  left: 0;
+}
+
+.tap-zone.right {
+  right: 0;
+}
+</style>
+
+<div class="story-view-wrapper">
+
+  {% if stories %}
+  <div class="story-container" id="storyContainer">
 
     {% for story in stories %}
-        <div class="mb-4">
-            <img src="{{ story.image.url }}" 
-                 class="img-fluid rounded" 
-                 style="max-height: 500px; object-fit: contain;">
-            <p class="text-muted">{{ story.created_at|timesince }} ago</p>
+      <div class="story-slide {% if forloop.first %}active{% endif %}">
+
+        <!-- HEADER -->
+        <div class="story-header">
+          <img src="{{ story.user.profile.profile_image.url }}">
+          <div>
+            <strong>{{ story.user.username }}</strong><br>
+            <small>{{ story.created_at|timesince }} ago</small>
+          </div>
         </div>
-    {% empty %}
-        <p>No active stories.</p>
+
+        <!-- STORY IMAGE -->
+        <img src="{{ story.image.url }}" class="story-image">
+
+        <!-- DELETE (ONLY OWNER) -->
+        {% if story.user == request.user %}
+        <form method="POST"
+              action="{% url 'delete_story' story.id %}"
+              onsubmit="return confirm('Delete this story?');"
+              class="delete-story-form">
+          {% csrf_token %}
+          <button type="submit" class="delete-story-btn">🗑️</button>
+        </form>
+        {% endif %}
+
+        <!-- VIEW COUNT -->
+        <div class="story-views">
+          👁️ {{ story.views.count }}
+        </div>
+
+      </div>
     {% endfor %}
 
+    <!-- TAP AREAS -->
+    <div class="tap-zone left" onclick="prevStory()"></div>
+    <div class="tap-zone right" onclick="nextStory()"></div>
+
+  </div>
+  {% else %}
+    <p class="text-white">No active stories.</p>
+  {% endif %}
+
 </div>
+
+<script>
+let currentIndex = 0;
+const slides = document.querySelectorAll(".story-slide");
+
+function showStory(index) {
+  slides.forEach(slide => slide.classList.remove("active"));
+  slides[index].classList.add("active");
+}
+
+function nextStory() {
+  if (currentIndex < slides.length - 1) {
+    currentIndex++;
+    showStory(currentIndex);
+  }
+}
+
+function prevStory() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    showStory(currentIndex);
+  }
+}
+</script>
+
 {% endblock %}

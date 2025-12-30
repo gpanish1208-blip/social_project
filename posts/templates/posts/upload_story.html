@@ -1,12 +1,94 @@
 {% extends 'posts/base.html' %}
 {% load static %}
 {% block content %}
-<div class="container mt-4">
-    <h3>Upload Story</h3>
+
+<style>
+/* ===== BACKGROUND ===== */
+body {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  min-height: 100vh;
+}
+
+/* ===== GLASS CARD ===== */
+.glass-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  padding: 25px;
+  color: #fff;
+}
+
+/* FILE INPUT */
+.glass-card input[type="file"] {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+}
+
+.glass-card input[type="file"]::file-selector-button {
+  background: #0095f6;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* BUTTON */
+.glass-btn {
+  background: linear-gradient(135deg, #0095f6, #1877f2);
+  border: none;
+  color: white;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,149,246,0.6);
+}
+
+/* TEXT */
+.glass-card h4 {
+  font-weight: 600;
+}
+.glass-card small {
+  opacity: 0.85;
+}
+</style>
+
+<div class="container d-flex justify-content-center align-items-center"
+     style="min-height: 90vh;">
+
+  <div class="glass-card w-100" style="max-width: 400px;">
+
+    <h4 class="mb-2 text-center">Upload Story</h4>
+    <small class="d-block mb-3 text-center">
+      Select one or multiple images
+    </small>
+
     <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button class="btn btn-primary">Post Story</button>
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <input type="file"
+               name="images"
+               multiple
+               accept="image/*"
+               class="form-control">
+      </div>
+
+      <button class="glass-btn w-100">
+        Upload Stories
+      </button>
     </form>
+
+  </div>
 </div>
+
 {% endblock %}

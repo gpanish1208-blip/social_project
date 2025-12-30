@@ -1,13 +1,10 @@
-# Django
-db.sqlite3
-
-# Python cache
+# Python
 __pycache__/
 *.pyc
 
-# Media & static cache
-/staticfiles/
+# Django
+db.sqlite3
+media/
 
-# OS files
-.DS_Store
-Thumbs.db
+# Environment
+.env
