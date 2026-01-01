@@ -275,16 +275,20 @@ def notifications(request):
 
 @login_required
 def upload_story(request):
-    if request.method == "POST":
-        form = StoryForm(request.POST, request.FILES)
-        if form.is_valid():
-            story = form.save(commit=False)
-            story.user = request.user
-            story.save()
-            return redirect('home')
-    else:
-        form = StoryForm()
-    return render(request, 'posts/upload_story.html', {'form': form})
+    if request.method == 'POST':
+        images = request.FILES.getlist('image')
+
+        for img in images:
+            Story.objects.create(
+                user=request.user,
+                image=img
+            )
+
+        return redirect('home')
+
+    return render(request, 'posts/upload_story.html')
+
+
 
 
 
