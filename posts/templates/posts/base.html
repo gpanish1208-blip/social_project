@@ -1,659 +1,179 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Surticlone{% endblock %}</title>
-    
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Surticlone{% endblock %}</title>
 
+  <!-- CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
 <style>
-  /* =========================
-   RESET
-========================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#fff;color:#111}
+
+/* SIDEBAR */
+.sidebar{
+  width:250px;
+  height:100vh;
+  background:black;
+  position:fixed;
+  top:0;
+  left:-250px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  transition:left .3s;
+  z-index:105;
+}
+.sidebar.active{left:0}
+.logo{font-family:"Pacifico",cursive;font-size:28px;color:white;margin-bottom:25px}
+
+.sidebar-menu{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
 }
 
-body {
-  font-family: Arial, sans-serif;
-  background: white;
-  color: #111;
+.sidebar-btn{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:12px 14px;
+  color:white;
+  text-decoration:none;
+  background:rgba(255,255,255,.1);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:12px;
+}
+.sidebar-btn:hover{background:rgba(255,255,255,.2)}
+
+.sidebar-bottom{margin-top:auto}
+
+.profile-box{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-radius:12px;
 }
 
-/* =========================
-   SIDEBAR
-========================= */
-.sidebar {
-  width: 250px;
-  background: black;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: -250px; /* hidden by default */
-  padding: 20px;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-  transition: left 0.3s;
-  z-index: 105;
+.profile-box img{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid #ddd;
 }
 
-.sidebar.active {
-  left: 0;
+/* OVERLAY */
+.overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:100;
 }
+.overlay.show{display:block}
 
-.sidebar .logo {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 30px;
+/* MAIN CONTENT */
+.main-inner{
+  margin-left:0;
+  padding:10px;
+  transition:margin-left .3s;
 }
+.sidebar.active~.main-inner{margin-left:250px}
 
-.sidebar a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: white;
-  padding: 10px 0;
-  font-size: 18px;
-  transition: color 0.2s;
-}
-
-.sidebar a:hover {
-  color: #007bff;
-}
-
-.profile-box {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.profile-box img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #ddd;
-}
-
-.profile-box a {
-  text-decoration: none;
-  color: #111;
-  font-size: 18px;
-}
-
-/* =========================
-   OVERLAY
-========================= */
-.overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.35);
-  z-index: 100;
-  transition: all 0.3s;
-}
-
-.overlay.show {
-  display: block;
-}
-
-/* =========================
-   MAIN CONTENT
-========================= */
-.main-inner {
-  margin-left: 0;
-  transition: margin-left 0.3s;
-  padding: 5px;
-}
-
-.sidebar.active ~ .main-inner {
-  margin-left: 250px;
-}
-
-.container-main {
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
-}
-
-.content-wrapper {
-  flex: 1;
-}
-
-.feed-inner {
-  display: flex;
-  flex-direction: column;
-  /* margin-top: 35px; */
-  gap: 20px;
-}
-
-/* =========================
-   MOBILE TOPBAR
-========================= */
-.mobile-topbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  gap: 140px;
-  width: 100%;
-  background: #fff;
-  padding: 10px 15px;
-  z-index: 110;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.mobile-topbar button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Hamburger button (mobile) */
-.hamburger-btn {
-  width: 30px;
-  height: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
-}
-
-.hamburger-btn span {
-  display: block;
-  height: 3px;
-  width: 100%;
-  background: #111;
-  border-radius: 2px;
-}
-
-/* =========================
-   PROFILE PICS
-========================= */
-.profile-pic {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-/* =========================
-   MOBILE RESPONSIVE
-========================= */
-@media (max-width: 992px) {
-  .main-inner {
-    margin-left: 0;
-  }
-
-  .sidebar {
-    top: 0;
-    left: -250px;
-    height: 100%;
-  }
-
-  .sidebar.active {
-    left: 0;
-  }
-
-  .overlay {
-    display: none;
-  }
-
-  .overlay.show {
-    display: block;
-  }
-}
-
-/* =========================
-   BUTTONS
-========================= */
-.btn-outline-danger, .btn-outline-secondary {
-  border-radius: 5px;
-}
-
-/* =========================
-   FEED CARDS (Optional)
-========================= */
-.feed-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.05);
-}
-
-/* =========================
-   LINK HOVER EFFECTS
-========================= */
-.sidebar a:hover {
-  color: #007bff;
-}
-
-.offcanvas-body .list-group-item:hover {
-  background-color: #f0f0f0;
-}
-/* =========================
-   SIDEBAR DESKTOP FIX
-========================= */
-
-@media (max-width: 992px) {
-  .sidebar { left: -250px; }
-  .logo { display: none; }     /* hide sidebar logo */
-  .logo-mobile { display: block; } /* show mobile logo */
-}
-@media (min-width: 992px) {
-  .sidebar { left: 0; }
-  .main-inner { margin-left: 250px; }
-  .mobile-topbar, .hamburger-btn { display: none; }
-}
-
-@media (min-width: 992px) {
-  .sidebar {
-    left: 0; /* show sidebar by default on desktop */
-  }
-
-  .main-inner {
-    margin-left: 250px; /* push main content to the right */
-
-  }
-
-  .mobile-topbar, .hamburger-btn {
-    display: none; /* hide mobile buttons on desktop */
-  }
-
-  .overlay {
-    display: none; /* overlay not needed on desktop */
-  }
-}
-
-.logo {
-    font-family: "Pacifico", cursive;
-    font-size: 28px;
-    color: white;
-}
-@media (min-width: 768px) {
-    .col-md-8 {
-        flex: 0 0 auto;
-        width: 45.666667%;
-    }
+/* MOBILE TOPBAR */
+.mobile-topbar{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  padding:10px 15px;
+  background:black;
+  z-index:110;
+  display:flex;
+  align-items:center;
+  gap:15px;
 }
 .logo-mobile{
-    font-family: "Pacifico", cursive;
-    font-size: 20px;
-    color: #111;
+  font-family:"Pacifico",cursive;
+  font-size:20px;
+  color:white;
 }
 
-.sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
+/* RESPONSIVE */
+@media(min-width:992px){
+  .sidebar{left:0}
+  .main-inner{margin-left:250px}
+  .mobile-topbar{display:none}
+  .overlay{display:none}
 }
-.sidebar-btn {
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  color: #fff;
-  text-decoration: none;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-}
-.sidebar-btn i {
-  margin-right: 0.75rem;
-  font-size: 1.2rem;
-}
-.sidebar-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
-}
-@media (max-width: 768px) {
-  .sidebar-menu {
-    flex-direction: row;
-    justify-content: space-around;
-  }
-  .sidebar-btn {
-    flex: 1;
-    justify-content: center;
-    padding: 0.5rem;
-  }
-  .sidebar-btn span {
-    display: none;
-  }
-  .sidebar-btn i {
-    margin-right: 0;
-  }
-} 
-
-
-
-
 </style>
 </head>
 
 <body>
 
-  <!-- MOBILE top-left toggle -->
-  <div class="mobile-topbar d-lg-none">
-    <button class="btn btn-light p-2 shadow-sm" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar"
-      aria-controls="mobileSidebar" title="Menu">
-
-      <!-- simple menu icon -->
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M3 6h18M3 12h18M3 18h18" stroke="#111" stroke-width="2" stroke-linecap="round" />
-      </svg>
-    </button>
-  </div>
 <!-- MOBILE TOPBAR -->
-<div class="mobile-topbar d-lg-none bg-black">
-
-    <!-- hamburger -->
-    <button class="btn btn-light p-2 shadow-sm bg-white" data-bs-toggle="offcanvas"
-        data-bs-target="#mobileSidebar">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M3 6h18M3 12h18M3 18h18"
-                stroke="#111" stroke-width="2" stroke-linecap="round" />
-        </svg>
-    </button>
-
-    <!-- MOBILE LOGO (Added) -->
-    <h4 class="logo-mobile ms-3 text-white" style="margin-bottom: 0px;">Surticlone</h4>
-
-</div>
-
-  <!-- HAMBURGER BUTTON (visible on mobile) -->
-  <!-- <button class="hamburger-btn d-md-none" onclick="toggleMenu()">
+<div class="mobile-topbar d-lg-none">
+  <button class="btn btn-light p-2" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+    <i class="fas fa-bars"></i>
   </button>
-     <h4 class="logo-mobile ms-3">Surticlone</h4> -->
-
+  <div class="logo-mobile">Surticlone</div>
 </div>
 
-
-  <!-- LEFT SIDEBAR -->
-<div id="sidebar" class="sidebar"  >
-  <h4 class="logo">Surticlone</h4>
-  
+<!-- SIDEBAR -->
+<div id="sidebar" class="sidebar">
+  <div class="logo">Surticlone</div>
 
   <div class="sidebar-menu">
-  <a href="{% url 'home' %}" class="sidebar-btn">
-    <i class="fas fa-home" style="padding-left: 10px;"></i><span>Home</span>
-  </a>
-  <a href="{% url 'notifications' %}" class="sidebar-btn">
-    <i class="fas fa-bell" style="padding-left: 10px;"></i><span>Notifications</span>
-  </a>
-  <a href="{% url 'create_post' %}" class="sidebar-btn">
-
-    <i class="fas fa-plus-circle" style="padding-left: 10px;"></i><span>Create</span>
-  </a>
-
-  <div class="settings-wrapper">
-  <button class="sidebar-btn" onclick="toggleTheme()">
-  <i class="fas fa-cog"></i>
-  <span>Settings</span>
-</button>
-
-
- 
-</div>
-
-</div>
-
+    <a href="{% url 'home' %}" class="sidebar-btn"><i class="fas fa-home"></i>Home</a>
+    <a href="{% url 'notifications' %}" class="sidebar-btn"><i class="fas fa-bell"></i>Notifications</a>
+    <a href="{% url 'create_post' %}" class="sidebar-btn"><i class="fas fa-plus-circle"></i>Create</a>
+    <button class="sidebar-btn"><i class="fas fa-cog"></i>Settings</button>
+  </div>
 
   {% if user.is_authenticated %}
-      <!-- PROFILE SECTION (Instagram style) -->
-      <div class="profile-box d-flex align-items-center gap-1 mt-3 mb-2" 
-           style="border-radius:10px;">
+  <div class="sidebar-bottom">
+    <div class="profile-box">
+      <img src="{{ user.profile.profile_image.url }}">
+      <a href="{% url 'profile' user.username %}" style="color:white;text-decoration:none;">Profile</a>
+    </div>
 
-        <!-- Profile Image -->
-        <img 
-          src="{{ user.profile.profile_image.url }}" 
-          class="rounded-circle" 
-          alt="Profile"
-          style="width:40px;height:40px;object-fit:cover;border:2px solid #ddd;"
-        >
-
-        <!-- Username + Profile Link -->
-        <div>
-          
-          <!-- <div style="font-weight:600;">{{ user.username }}</div> -->
-          <a href="{% url 'profile' user.username %}" 
-             style="font-size:20px;color:white;text-decoration:none;">
-              Profile
-          </a>
-        </div>
-
-      </div>
-
-      <!-- LOGOUT BUTTON -->
-      <form method="POST" action="{% url 'logout' %}" style="padding: 10px; padding-top: 300px;">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-danger w-100">
-          Logout
-        </button>
-      </form>
-      
-
-  {% else %}
-      <a href="{% url 'login' %}">Login</a>
-      <a href="{% url 'register' %}">Register</a>
+    <form method="POST" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button class="btn btn-outline-danger w-100 mt-2">Logout</button>
+    </form>
+  </div>
   {% endif %}
 </div>
 
+<div id="overlay" class="overlay"></div>
 
-  <!-- OVERLAY (when menu opens) -->
-  <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
-
-
-  <!-- MOBILE OFFCANVAS SIDEBAR (left slide) -->
-  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+<!-- MOBILE OFFCANVAS -->
+<div class="offcanvas offcanvas-start" id="mobileSidebar">
   <div class="offcanvas-header bg-black text-white">
-    <h5 class="offcanvas-title">Menu</h5>
-    <button type="button" class="btn-close text-reset bg-white" data-bs-dismiss="offcanvas"></button>
+    <h5>Menu</h5>
+    <button class="btn-close bg-white" data-bs-dismiss="offcanvas"></button>
   </div>
-
-  <div class="offcanvas-body p-0 bg-black text-white">
-    <div class="list-group list-group-flush">
-
-      <a class="list-group-item list-group-item-action  bg-black text-white" href="{% url 'home' %}">
-        Home
-      </a>
-
-      <a class="list-group-item list-group-item-action  bg-black text-white" href="{% url 'notifications' %}">
-        Notifications
-      </a>
-
-      <a class="list-group-item list-group-item-action  bg-black text-white" href="{% url 'create_post' %}">
-        Create
-      </a>
-
-      <!-- SETTINGS -->
-      <div class="list-group-item  bg-black text-white">
-        <strong>Settings</strong>
-        <div class="d-flex gap-2 mt-2">
-        </div>
-      </div>
-
-      {% if user.is_authenticated %}
-      <div class="list-group-item  bg-black text-white">
-        <a href="{% url 'profile' user.username %}"
-           class="d-flex align-items-center gap-2 text-decoration-none">
-          <img src="{{ user.profile.profile_image.url }}"
-               class="profile-pic" alt="pf">
-          <div>
-            <div style="font-weight:600">{{ user.username }}</div>
-            <div class="small text-white">View profile</div>
-          </div>
-        </a>
-
-        <form method="POST" action="{% url 'logout' %}" class="mt-3">
-          {% csrf_token %}
-          <button class="btn btn-outline-primary w-100" type="submit">
-            Logout
-          </button>
-        </form>
-      </div>
-      {% else %}
-      <a class="list-group-item list-group-item-action" href="{% url 'login' %}">
-        Login
-      </a>
-      <a class="list-group-item list-group-item-action" href="{% url 'register' %}">
-        Register
-      </a>
-      {% endif %}
-
-    </div>
+  <div class="offcanvas-body bg-black">
+    <a class="list-group-item bg-black text-white" href="{% url 'home' %}">Home</a>
+    <a class="list-group-item bg-black text-white" href="{% url 'notifications' %}">Notifications</a>
+    <a class="list-group-item bg-black text-white" href="{% url 'create_post' %}">Create</a>
   </div>
 </div>
 
-  <!-- MAIN LAYOUT: center feed + right column -->
-  <div class="main-inner">
-    <div class="container-main">
-      <!-- CENTER: feed (your existing block content) -->
-      <div class="content-wrapper">
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-        {% endif %}
+<!-- MAIN CONTENT -->
+<div class="main-inner pt-5">
+  {% block content %}{% endblock %}
+</div>
 
-        <div class="feed-inner pt-5 pe-3">
-          {% block content %}
-         
-          {% endblock %}
-        </div>
-      </div>
-      
-
-      <!-- RIGHT PANEL: suggestions (desktop only) -->
-      <!-- <aside class="right-panel d-none d-lg-block">
-      <div style="width:100%;max-width:320px;">
-        <div class="card" style="border:none;background:transparent">
-          <div style="padding:14px 12px 8px 12px">
-            {% if user.is_authenticated %}
-              <div class="d-flex align-items-center gap-2">
-                <img src="{{ user.profile.profile_image.url }}" class="profile-pic" alt="pf">
-                <div>
-                  <div style="font-weight:600">{{ user.username }}</div>
-                  <div class="small-muted">Your profile</div>
-                </div>
-              </div>
-            {% else %}
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <div style="font-weight:600">Welcome</div>
-                  <div class="small-muted">Log in to see photos and more</div>
-                </div>
-                <div>
-                  <a class="btn btn-sm btn-outline-dark" href="{% url 'login' %}">Log in</a>
-                </div>
-              </div>
-            {% endif %}
-          </div>
-
-          <div style="padding:0 12px 12px 12px">
-            <div class="d-flex justify-content-between align-items-center small-muted mb-2">
-              <div>Suggestions for you</div>
-              <div style="font-size:12px;color:#999">See all</div>
-            </div> -->
-
-      <!-- Example suggestion items (server should supply recommended users) -->
-      <!-- {% comment %} Replace these static examples with server-driven suggestions {% endcomment %}
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <div class="d-flex align-items-center gap-2">
-                <img src="{% static 'posts/sample_user1.jpg' %}" class="profile-pic" style="width:36px;height:36px" alt="">
-                <div>
-                  <div style="font-weight:600">example_user</div>
-                  <div class="small-muted" style="font-size:12px">Suggested</div>
-                </div>
-              </div>
-              <div><button class="btn btn-sm btn-primary">Follow</button></div>
-            </div>
-
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <div class="d-flex align-items-center gap-2">
-                <img src="{% static 'posts/sample_user2.jpg' %}" class="profile-pic" style="width:36px;height:36px" alt="">
-                <div>
-                  <div style="font-weight:600">someone</div>
-                  <div class="small-muted" style="font-size:12px">Suggested</div>
-                </div>
-              </div>
-              <div><button class="btn btn-sm btn-primary">Follow</button></div>
-            </div> -->
-
-      <!-- end suggestions -->
-      <!-- </div>
-        </div>
-
-        <div class="small-muted mt-3" style="font-size:12px;padding:12px">
-          © 2025 Surticlone
-        </div>
-      </div>
-    </aside> -->
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
- <script>
-/* ===============================
-   CSRF TOKEN HELPER (GLOBAL)
-================================ */
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-
-// Declare ONCE
-const csrftoken = getCookie('csrftoken');
-
-/* ===============================
-   AUTO-CLOSE BOOTSTRAP OFFCANVAS
-================================ */
-document.addEventListener('click', function (e) {
-  const offcanvasEl = document.getElementById('mobileSidebar');
-  if (!offcanvasEl) return;
-
-  const bsInstance = bootstrap.Offcanvas.getInstance(offcanvasEl);
-  if (!bsInstance) return;
-
-  if (e.target.closest('.offcanvas') && e.target.closest('a')) {
-    bsInstance.hide();
-  }
-});
-</script>
-
-
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
