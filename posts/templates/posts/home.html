@@ -94,7 +94,8 @@
       <!-- Post Image -->
       <div class="mb-2">
         <a href="{% url 'post_detail' post.pk %}">
-          <img src="{{ post.image.url }}" class="post-image rounded shadow-sm" alt="post">
+          <img src="{{ post.image.url }}" class="post-image rounded shadow-sm">
+
         </a>
       </div>
 
@@ -125,7 +126,6 @@
       </div>
 
       <!-- Caption and comments -->
-      <!-- COMMENTS -->
       <!-- COMMENTS -->
       <div class="glass-comments">
 
@@ -345,6 +345,16 @@
         }
       });
   }
+    const offcanvas = document.getElementById('mobileSidebar');
+
+  offcanvas.addEventListener('shown.bs.offcanvas', () => {
+    document.body.style.pointerEvents = 'none';
+    offcanvas.style.pointerEvents = 'auto';
+  });
+
+  offcanvas.addEventListener('hidden.bs.offcanvas', () => {
+    document.body.style.pointerEvents = 'auto';
+  });
 </script>
 
 
@@ -726,9 +736,6 @@
   }
 
 
-
-
-
   /* ADD STORY PLUS */
   .add-story-plus {
     width: 20px;
@@ -836,7 +843,7 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  z-index: 9999;
+  z-index: 1;
 }
 
 /* NAME */
@@ -912,6 +919,140 @@
     padding: 4px 8px;
     border-radius: 12px;
   }
+  /* Prevent background interaction when menu is open */
+.offcanvas-backdrop {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Remove blue focus ring */
+button:focus,
+a:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.offcanvas {
+  z-index: 2000;
+}
+
+.sidebar,
+.main-inner {
+  z-index: 1;
+}
+/* ===============================
+   INSTAGRAM STYLE MOBILE FEED
+================================ */
+@media (max-width: 768px) {
+
+  /* Remove outer padding */
+  body,
+  .container,
+  .container-fluid {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Remove row gutters */
+  .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Remove column padding */
+  .col,
+  .col-12,
+  .col-md-8,
+  .col-lg-6 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Post card full width */
+  .post-card,
+  .feed-card {
+    width: 100%;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: #000;
+  }
+
+  /* Image container */
+  .post-image-wrapper {
+    width: 100%;
+    overflow: hidden;
+    background: #000;
+  }
+
+  /* Image auto adjust */
+  .post-image,
+  .feed-image,
+  .post-card img {
+    width: 100%;
+    height: auto;              /* 🔥 IMPORTANT */
+    max-height: 75vh;          /* Instagram-like */
+    object-fit: contain;       /* NO CROP */
+    display: block;
+    background: #000;
+  }
+
+  /* Inner content padding (likes, caption) */
+  .post-body,
+  .post-footer,
+  .post-actions {
+    padding: 10px 12px;
+  }
+}
+@media (max-width: 768px) {
+
+  /* Remove padding from post card */
+  .post-card {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    border-radius: 0 !important;
+    margin-bottom: 12px !important;
+  }
+
+}
+@media (max-width: 768px) {
+
+  .post-image {
+    width: 100% !important;
+    height: auto !important;        /* 🔥 IMPORTANT */
+    max-height: 75vh;               /* Instagram feel */
+    object-fit: contain;            /* no crop */
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    display: block;
+    background: #000;
+  }
+
+}
+@media (max-width: 768px) {
+
+  .container,
+  .container-fluid,
+  .row,
+  .col,
+  .col-12,
+  .col-md-8 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+}
+@media (max-width: 768px) {
+
+  .post-card > .d-flex,
+  .glass-comments,
+  .comment-item {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+}
+
 </style>
 
 {% endblock %}

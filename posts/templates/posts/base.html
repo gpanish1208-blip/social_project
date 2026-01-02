@@ -122,10 +122,14 @@ body{font-family:Arial,sans-serif;background:#fff;color:#111}
 
 <!-- MOBILE TOPBAR -->
 <div class="mobile-topbar d-lg-none">
-  <button class="btn btn-light p-2" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
-    <i class="fas fa-bars"></i>
+   <!-- MENU BUTTON -->
+  <button class="btn btn-dark me-2"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#mobileSidebar">
+    ☰
   </button>
-  <div class="logo-mobile">Surticlone</div>
+
+  <div class="logo-mobile">Surticlone</div> 
 </div>
 
 <!-- SIDEBAR -->
@@ -156,16 +160,68 @@ body{font-family:Arial,sans-serif;background:#fff;color:#111}
 
 <div id="overlay" class="overlay"></div>
 
-<!-- MOBILE OFFCANVAS -->
-<div class="offcanvas offcanvas-start" id="mobileSidebar">
-  <div class="offcanvas-header bg-black text-white">
-    <h5>Menu</h5>
-    <button class="btn-close bg-white" data-bs-dismiss="offcanvas"></button>
+<!-- MOBILE OFFCANVAS MENU -->
+<div class="offcanvas offcanvas-start bg-black text-white"
+     tabindex="-1"
+     id="mobileSidebar">
+
+  <!-- HEADER -->
+  <div class="offcanvas-header border-bottom border-secondary">
+    <h5 class="mb-0">Menu</h5>
+    <button type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="offcanvas"></button>
   </div>
-  <div class="offcanvas-body bg-black">
-    <a class="list-group-item bg-black text-white" href="{% url 'home' %}">Home</a>
-    <a class="list-group-item bg-black text-white" href="{% url 'notifications' %}">Notifications</a>
-    <a class="list-group-item bg-black text-white" href="{% url 'create_post' %}">Create</a>
+
+  <!-- BODY -->
+  <div class="offcanvas-body d-flex flex-column justify-content-between">
+
+    <!-- TOP MENU -->
+    <div class="list-group list-group-flush">
+
+      <a href="{% url 'home' %}" class="list-group-item bg-black text-white border-0">
+        <i class="fas fa-home me-2"></i> Home
+      </a>
+
+      <a href="{% url 'notifications' %}" class="list-group-item bg-black text-white border-0">
+        <i class="fas fa-bell me-2"></i> Notifications
+      </a>
+
+      <a href="{% url 'create_post' %}" class="list-group-item bg-black text-white border-0">
+        <i class="fas fa-plus-circle me-2"></i> Create
+      </a>
+
+    </div>
+
+    <!-- PROFILE + LOGOUT -->
+    {% if user.is_authenticated %}
+    <div class="mt-4 pt-3 border-top border-secondary">
+
+      <!-- PROFILE ROW -->
+      <div class="d-flex align-items-center mb-3">
+        <img src="{{ user.profile.profile_image.url }}"
+             style="width:42px;height:42px;border-radius:50%;object-fit:cover;"
+             class="me-2">
+        <div>
+          <div class="fw-semibold">{{ user.username }}</div>
+          <a href="{% url 'profile' user.username %}"
+             class="text-decoration-none text-primary small">
+            View profile
+          </a>
+        </div>
+      </div>
+
+      <!-- LOGOUT -->
+      <form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button class="btn btn-outline-danger w-100">
+          Logout
+        </button>
+      </form>
+
+    </div>
+    {% endif %}
+
   </div>
 </div>
 
@@ -175,5 +231,6 @@ body{font-family:Arial,sans-serif;background:#fff;color:#111}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
