@@ -22,8 +22,9 @@
 
   /* GLASS CARD */
   .glass-card {
-    width: 100%;
-    max-width: 380px;
+     width: 100%;
+  max-width: 450px;
+  margin: auto;
     padding: 35px 30px;
     background: rgba(255, 255, 255, 0.25);
     backdrop-filter: blur(15px);
@@ -108,6 +109,23 @@
     margin-top: 15px;
     font-size: 14px;
   }
+
+  /* MOBILE FIX FOR LOGIN & REGISTER */
+/* @media (max-width: 768px) {
+  .glass-card {
+    width: 92% !important;
+    max-width: 92% !important;
+    padding: 20px !important;
+  }
+} */
+/* Mobile */
+@media (max-width: 768px) {
+  .glass-card {
+    max-width: 95%;
+    border-radius: 14px;
+  }
+}
+  
 </style>
 
 <div class="glass-card">
