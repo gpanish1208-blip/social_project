@@ -11,44 +11,44 @@
     <div class="col-12 col-md-8 col-lg-6">
 
       <!-- STORIES BAR (ABOVE POSTS) -->
-     <!-- STORIES BAR -->
-<div class="stories-wrapper">
-  <div class="stories-bar">
+      <!-- STORIES BAR -->
+      <div class="stories-wrapper">
+        <div class="stories-bar">
 
-    <!-- YOUR STORY (ALWAYS SHOWS) -->
-    <div class="story-item">
+          <!-- YOUR STORY (ALWAYS SHOWS) -->
+          <div class="story-item">
 
-      <!-- Click image = view story -->
-      <a href="{% url 'view_story' user.id %}">
-        <div class="story-avatar {% if user.id in active_story_users %}ring{% endif %}">
-          <img src="{{ user.profile.profile_image.url }}" alt="Your story">
+            <!-- Click image = view story -->
+            <a href="{% url 'view_story' user.id %}">
+              <div class="story-avatar {% if user.id in active_story_users %}ring{% endif %}">
+                <img src="{{ user.profile.profile_image.url }}" alt="Your story">
+              </div>
+            </a>
+
+            <!-- Click + = upload new story -->
+            <a href="{% url 'upload_story' %}" class="story-plus">+</a>
+
+            <span class="story-name">Your story</span>
+          </div>
+
+          <!-- OTHER USERS -->
+          {% for profile in profiles %}
+          {% if profile.user.id in active_story_users and profile.user != user %}
+          <div class="story-item">
+            <a href="{% url 'view_story' profile.user.id %}">
+              <div class="story-avatar ring">
+                <img src="{{ profile.profile_image.url }}" alt="{{ profile.user.username }}">
+              </div>
+            </a>
+            <span class="story-name">
+              {{ profile.user.username|truncatechars:9 }}
+            </span>
+          </div>
+          {% endif %}
+          {% endfor %}
+
         </div>
-      </a>
-
-      <!-- Click + = upload new story -->
-      <a href="{% url 'upload_story' %}" class="story-plus">+</a>
-
-      <span class="story-name">Your story</span>
-    </div>
-
-    <!-- OTHER USERS -->
-    {% for profile in profiles %}
-      {% if profile.user.id in active_story_users and profile.user != user %}
-        <div class="story-item">
-          <a href="{% url 'view_story' profile.user.id %}">
-            <div class="story-avatar ring">
-              <img src="{{ profile.profile_image.url }}" alt="{{ profile.user.username }}">
-            </div>
-          </a>
-          <span class="story-name">
-            {{ profile.user.username|truncatechars:9 }}
-          </span>
-        </div>
-      {% endif %}
-    {% endfor %}
-
-  </div>
-</div>
+      </div>
 
 
       <!-- POSTS START HERE -->
@@ -126,42 +126,69 @@
       </div>
 
       <!-- Caption and comments -->
-      <!-- COMMENTS -->
-      <div class="glass-comments">
 
-        {% if post.comments.count > 2 %}
-        <button class="toggle-comments-btn" onclick="toggleComments('{{ post.pk }}', this)">
-          View comments ({{ post.comments.count }})
+      
+ <div class="glass-comments">
+
+  <!-- VIEW ALL -->
+  {% if post.comments.count > 2 %}
+  <button class="view-comments-btn" onclick="toggleComments('{{ post.id }}')">
+    View all {{ post.comments.count }} comments
+  </button>
+  {% endif %}
+
+  <!-- COMMENTS WRAPPER -->
+  <div id="comments-{{ post.id }}" class="comments-wrapper d-none">
+
+    {% for comment in post.comments.all %}
+    {% if not comment.parent %}
+
+    <!-- COMMENT -->
+    <div class="comment-item" id="comment-{{ comment.id }}">
+      <strong>{{ comment.user.username }}</strong>
+      {{ comment.content }}
+
+      <div class="comment-actions">
+        <button class="reply-btn" onclick="openReplyForm('{{ comment.id }}')">
+          Reply
+        </button>
+
+        {% if comment.user == user %}
+        <button onclick="deleteComment('{{ comment.id }}')" class="delete-comment-btn">
+          🗑
         </button>
         {% endif %}
-
-        <div class="comments-list {% if post.comments.count > 2 %}d-none{% endif %}" id="comments-{{ post.pk }}">
-
-          {% for comment in post.comments.all|slice:"-2:" %}
-          <div class="comment-item" id="comment-{{ comment.id }}">
-            <div>
-              <strong>{{ comment.user.username }}</strong>
-              <span>{{ comment.content }}</span>
-            </div>
-
-            {% if comment.user == user %}
-            <button type="button" class="delete-comment-btn" onclick="deleteComment({{ comment.id }})">
-              🗑
-            </button>
-            {% endif %}
-          </div>
-          {% empty %}
-          <p class="no-comments">No comments yet</p>
-          {% endfor %}
-
-          {% if post.comments.count > 2 %}
-          <a href="{% url 'post_detail' post.pk %}" class="small text-info text-decoration-none d-block mt-1">
-            View all {{ post.comments.count }} comments
-          </a>
-          {% endif %}
-
-        </div>
       </div>
+    </div>
+
+    <!-- REPLY FORM -->
+    <div id="reply-form-{{ comment.id }}" class="reply-form d-none">
+      <form method="POST" action="{% url 'add_comment' post.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+        <input type="text" name="content" placeholder="Write a reply…" required>
+        <button type="submit">Reply</button>
+      </form>
+    </div>
+
+    <!-- REPLIES -->
+    {% for reply in comment.replies.all %}
+    <div class="reply-item" id="comment-{{ reply.id }}">
+      <strong>{{ reply.user.username }}</strong>
+      {{ reply.content }}
+
+      {% if reply.user == user %}
+      <button onclick="deleteComment('{{ reply.id }}')" class="delete-comment-btn">
+        🗑
+      </button>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
 
 
 
@@ -200,7 +227,7 @@
     <div class="modal-content glass-comment-modal">
 
       <div class="modal-header border-0 pb-1">
-        <h6 class="modal-title fw-semibold">Add a comment</h6>
+        <h6 class="modal-title fw-semibold text-black">Add a comment</h6>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
@@ -212,7 +239,7 @@
       </div>
 
       <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">
+        <button type="button" class="btn btn-outline-dark btn-sm" data-bs-dismiss="modal">
           Cancel
         </button>
         <button type="button" class="btn btn-primary btn-sm px-4" id="sendCommentBtn">
@@ -345,7 +372,7 @@
         }
       });
   }
-    const offcanvas = document.getElementById('mobileSidebar');
+  const offcanvas = document.getElementById('mobileSidebar');
 
   offcanvas.addEventListener('shown.bs.offcanvas', () => {
     document.body.style.pointerEvents = 'none';
@@ -355,6 +382,31 @@
   offcanvas.addEventListener('hidden.bs.offcanvas', () => {
     document.body.style.pointerEvents = 'auto';
   });
+
+  function showReplyForm(id) {
+    const form = document.getElementById(`reply-form-${id}`);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
+  function openReplyForm(id) {
+  const form = document.getElementById("reply-form-" + id);
+  form.classList.toggle("d-none");
+}
+
+function deleteComment(id) {
+  fetch(`/comment/delete/${id}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": "{{ csrf_token }}"
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      document.getElementById("comment-" + id)?.remove();
+      location.reload();
+    }
+  });
+}       
 </script>
 
 
@@ -566,36 +618,21 @@
   }
 
   /* ===== GLASS COMMENT DISPLAY ===== */
-  .glass-comments {
-    margin-top: 10px;
-    padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-  }
+
 
   .comments-list {
     max-height: 120px;
     overflow-y: auto;
   }
 
-  .comment-item {
-    font-size: 14px;
-    line-height: 1.4;
-    margin-bottom: 6px;
-    color: white;
-  }
-
-  .comment-item strong {
-    margin-right: 5px;
-  }
 
   .no-comments {
     font-size: 13px;
     color: #ccc;
   }
+
+
+
 
   /* ===== SHOW / HIDE COMMENTS ===== */
   .toggle-comments-btn {
@@ -613,68 +650,82 @@
     text-decoration: underline;
   }
 
-  /* ==========================
-   GLASS COMMENT MODAL
-=========================== */
-  .glass-comment-modal {
-    background: rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: white;
-  }
+  <style>
 
-  /* HEADER */
-  .glass-comment-modal .modal-title {
-    color: white;
-  }
-
-  /* FLOATING TEXTAREA */
-  .floating-comment {
-    position: relative;
-  }
-
-  .floating-comment textarea {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.65);
-    border: none;
-    border-radius: 12px;
-    padding: 12px;
-    color: #000;
-    resize: none;
-  }
-
-  .floating-comment textarea:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #0095f6;
-  }
-
-  .floating-comment label {
-    position: absolute;
-    top: 12px;
-    left: 14px;
-    font-size: 14px;
-    color: #555;
-    pointer-events: none;
-    transition: 0.25s ease;
-  }
-
-  /* FLOAT EFFECT */
-  .floating-comment textarea:focus+label,
-  .floating-comment textarea:not(:placeholder-shown)+label {
-    top: -8px;
-    font-size: 12px;
-    color: #0095f6;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 0 6px;
-    border-radius: 6px;
+  /* =============================
+   COMMENTS RESPONSIVE
+============================= */
+  .glass-comments {
+    padding: 6px 0;
   }
 
   .comment-item {
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .comment-main {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 5px;
+    word-break: break-word;
+  }
+
+.reply-btn {
+  background: none;
+  border: none;
+  color: #0095f6;
+  font-size: 12px;
+  cursor: pointer;
+}
+  /* Replies */
+  .replies {
+    margin-left: 18px;
+    margin-top: 6px;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+    padding-left: 8px;
+  }
+
+  .reply-item {
+  margin-left: 25px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+  /* Reply input */
+  .reply-form {
+    margin-left: 18px;
+    margin-top: 4px;
+  }
+
+  .reply-form input {
+    width: 75%;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #111;
+    color: #fff;
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+
+  .reply-form button {
+    background: #0095f6;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 480px) {
+    .comment-item {
+      font-size: 13px;
+    }
+
+    .reply-item {
+      font-size: 12px;
+    }
   }
 
   .delete-comment-btn {
@@ -772,90 +823,90 @@
 
 
   /* WRAPPER (CENTER LIKE INSTAGRAM FEED) */
-.stories-wrapper {
-  width: 100%;
-  margin-bottom: 14px;
-}
+  .stories-wrapper {
+    width: 100%;
+    margin-bottom: 14px;
+  }
 
-/* STORY BAR */
-.stories-bar {
-  display: flex !important;
-  flex-direction: row !important;
-  gap: 16px;
-  padding: 12px 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.stories-bar::-webkit-scrollbar {
-  display: none;
-}
+  /* STORY BAR */
+  .stories-bar {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 16px;
+    padding: 12px 8px 8px 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
 
-/* STORY ITEM */
-.story-item {
-  position: relative;
-  width: 72px;
-  flex: 0 0 auto;
-  text-align: center;
-  overflow: visible !important;
-}
+  .stories-bar::-webkit-scrollbar {
+    display: none;
+  }
 
-/* AVATAR */
-.story-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  padding: 2px;
-  background: #222;
-  overflow: visible;
-}
-.story-avatar img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-}
+  /* STORY ITEM */
+  .story-item {
+    position: relative;
+    width: 72px;
+    flex: 0 0 auto;
+    text-align: center;
+    overflow: visible !important;
+  }
 
-/* GRADIENT RING */
-.story-avatar.ring {
-  background: linear-gradient(
-    45deg,
-    #feda75,
-    #fa7e1e,
-    #d62976,
-    #962fbf
-  );
-}
+  /* AVATAR */
+  .story-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    padding: 2px;
+    background: #222;
+    overflow: visible;
+  }
 
-/* BLUE + BUTTON (UPLOAD) */
-.story-plus {
-  position: absolute;
-  bottom: 14px;
-  right: 4px;
-  width: 22px;
-  height: 22px;
-  background: #0095f6;
-  color: #fff;
-  border-radius: 50%;
-  font-size: 18px;
-  font-weight: bold;
-  border: 2px solid #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  z-index: 1;
-}
+  .story-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 
-/* NAME */
-.story-name {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  /* GRADIENT RING */
+  .story-avatar.ring {
+    background: linear-gradient(45deg,
+        #feda75,
+        #fa7e1e,
+        #d62976,
+        #962fbf);
+  }
+
+  /* BLUE + BUTTON (UPLOAD) */
+  .story-plus {
+    position: absolute;
+    bottom: 14px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    background: #0095f6;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    z-index: 1;
+  }
+
+  /* NAME */
+  .story-name {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
 
   /* MOBILE */
@@ -919,140 +970,159 @@
     padding: 4px 8px;
     border-radius: 12px;
   }
+
   /* Prevent background interaction when menu is open */
-.offcanvas-backdrop {
-  background-color: rgba(0, 0, 0, 0.6);
-}
+  .offcanvas-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
 
-/* Remove blue focus ring */
-button:focus,
-a:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-.offcanvas {
-  z-index: 2000;
-}
+  /* Remove blue focus ring */
+  button:focus,
+  a:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 
-.sidebar,
-.main-inner {
-  z-index: 1;
-}
-/* ===============================
+  .offcanvas {
+    z-index: 2000;
+  }
+
+  .sidebar,
+  .main-inner {
+    z-index: 1;
+  }
+
+  /* ===============================
    INSTAGRAM STYLE MOBILE FEED
 ================================ */
-@media (max-width: 768px) {
+  @media (max-width: 768px) {
 
-  /* Remove outer padding */
-  body,
-  .container,
-  .container-fluid {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    margin: 0 !important;
+    /* Remove outer padding */
+    body,
+    .container,
+    .container-fluid {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      margin: 0 !important;
+    }
+
+    /* Remove row gutters */
+    .row {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+
+    /* Remove column padding */
+    .col,
+    .col-12,
+    .col-md-8,
+    .col-lg-6 {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+
+    /* Post card full width */
+    .post-card,
+    .feed-card {
+      width: 100%;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      background: #000;
+    }
+
+    /* Image container */
+    .post-image-wrapper {
+      width: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* Image auto adjust */
+    .post-image,
+    .feed-image,
+    .post-card img {
+      width: 100%;
+      height: auto;
+      /* 🔥 IMPORTANT */
+      max-height: 75vh;
+      /* Instagram-like */
+      object-fit: contain;
+      /* NO CROP */
+      display: block;
+      background: #000;
+    }
+
+    /* Inner content padding (likes, caption) */
+    .post-body,
+    .post-footer,
+    .post-actions {
+      padding: 10px 12px;
+    }
   }
 
-  /* Remove row gutters */
-  .row {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+  @media (max-width: 768px) {
+
+    /* Remove padding from post card */
+    .post-card {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      border-radius: 0 !important;
+      margin-bottom: 12px !important;
+    }
+
   }
 
-  /* Remove column padding */
-  .col,
-  .col-12,
-  .col-md-8,
-  .col-lg-6 {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+  @media (max-width: 768px) {
+
+    .post-image {
+      width: 100% !important;
+      height: auto !important;
+      /* 🔥 IMPORTANT */
+      max-height: 75vh;
+      /* Instagram feel */
+      object-fit: contain;
+      /* no crop */
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      display: block;
+      background: #000;
+    }
+
   }
 
-  /* Post card full width */
-  .post-card,
-  .feed-card {
-    width: 100%;
-    margin: 0 !important;
-    border-radius: 0 !important;
-    background: #000;
+  @media (max-width: 768px) {
+
+    .container,
+    .container-fluid,
+    .row,
+    .col,
+    .col-12,
+    .col-md-8 {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+
   }
 
-  /* Image container */
-  .post-image-wrapper {
-    width: 100%;
-    overflow: hidden;
-    background: #000;
-  }
+  @media (max-width: 768px) {
 
-  /* Image auto adjust */
-  .post-image,
-  .feed-image,
-  .post-card img {
-    width: 100%;
-    height: auto;              /* 🔥 IMPORTANT */
-    max-height: 75vh;          /* Instagram-like */
-    object-fit: contain;       /* NO CROP */
-    display: block;
-    background: #000;
-  }
+    .post-card>.d-flex,
+    .glass-comments,
+    .comment-item {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
 
-  /* Inner content padding (likes, caption) */
-  .post-body,
-  .post-footer,
-  .post-actions {
-    padding: 10px 12px;
   }
+  .view-comments-btn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 13px;
+  margin-bottom: 5px;
 }
-@media (max-width: 768px) {
-
-  /* Remove padding from post card */
-  .post-card {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    border-radius: 0 !important;
-    margin-bottom: 12px !important;
-  }
-
-}
-@media (max-width: 768px) {
-
-  .post-image {
-    width: 100% !important;
-    height: auto !important;        /* 🔥 IMPORTANT */
-    max-height: 75vh;               /* Instagram feel */
-    object-fit: contain;            /* no crop */
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    display: block;
-    background: #000;
-  }
-
-}
-@media (max-width: 768px) {
-
-  .container,
-  .container-fluid,
-  .row,
-  .col,
-  .col-12,
-  .col-md-8 {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-
-}
-@media (max-width: 768px) {
-
-  .post-card > .d-flex,
-  .glass-comments,
-  .comment-item {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-}
-
 </style>
 
 {% endblock %}

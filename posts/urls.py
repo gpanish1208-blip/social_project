@@ -35,7 +35,9 @@ urlpatterns = [
     # Contact
     path('contact/', views.contact_view, name='contact'),
 
-    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/', views.notifications_view, name='notifications'),
+    path("notifications/unread/", views.notification_unread_count, name="notification_unread_count"),
+
 
 
     # story
@@ -49,7 +51,9 @@ urlpatterns = [
     path("profile/<str:username>/follow/", views.toggle_follow, name="toggle_follow"),
     path("follow/<str:username>/", views.toggle_follow, name="toggle_follow"),
 
-    path('comment/delete/<int:comment_id>/', views.delete_comment, name='delete_comment'),
+    path("comment/delete/<int:comment_id>/", views.delete_comment, name="delete_comment"),
+    path('comment/<int:post_id>/', views.add_comment, name='add_comment'),
+
 
     path('settings/', views.settings_view, name='settings'),
 

@@ -4,12 +4,13 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
-from .models import Post, Profile, Comment, Report, Story
+from .models import Post, Profile, Comment, Report, Story,Notification
 from .forms import RegisterForm, PostForm, ProfileForm, StoryForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils import timezone
+from .models import Notification
 from datetime import timedelta
-
+from django.db.models import Prefetch
 
 
 # -------------------- USER AUTH --------------------
@@ -150,17 +151,45 @@ def like_post(request, pk):
 
 
 # -------------------- COMMENTS --------------------
-
 @login_required
-def add_comment(request, pk):
-    """Add comment (AJAX)"""
-    if request.method == 'POST':
-        post = get_object_or_404(Post, pk=pk)
-        content = request.POST.get('content', '').strip()
-        if content:
-            Comment.objects.create(user=request.user, post=post, content=content)
-        return JsonResponse({'comments_count': post.comments.count()})
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.method == "POST":
+        content = request.POST.get("content", "").strip()
+        parent_id = request.POST.get("parent_id")
+
+        if not content:
+            return redirect("home")
+
+        # get parent comment if reply
+        parent_comment = None
+        if parent_id:
+            try:
+                parent_comment = Comment.objects.get(id=parent_id)
+            except Comment.DoesNotExist:
+                parent_comment = None
+
+        # create comment
+        comment = Comment.objects.create(
+            post=post,
+            user=request.user,
+            content=content,
+            parent=parent_comment
+        )
+
+        # 🔔 CREATE NOTIFICATION WHEN REPLY
+        if parent_comment and parent_comment.user != request.user:
+            Notification.objects.create(
+                user=parent_comment.user,
+                from_user=request.user,
+                post=post,
+                comment=comment,
+                message=f"{request.user.username} replied to your comment",
+                notif_type="reply"
+            )
+
+    return redirect("home")
 
 @login_required
 def delete_comment(request, comment_id):
@@ -262,15 +291,37 @@ def logout_view(request):
 
 
 
+# ===========================
+# NOTIFICATION LIST VIEW
+# ===========================
 @login_required
-def notifications(request):
-    reports = Report.objects.filter(reported_by=request.user, reply__isnull=False).order_by('-created_at')
+def notifications_view(request):
+    notifications = (
+        Notification.objects
+        .filter(user=request.user)
+        .order_by("-created_at")
+    )
 
-    # Mark unread reports as read
-    unread_reports = reports.filter(is_read=False)
-    unread_reports.update(is_read=True)
+    # mark all as seen
+    notifications.filter(is_seen=False).update(is_seen=True)
 
-    return render(request, 'posts/notifications.html', {'reports': reports})
+    return render(
+        request,
+        "posts/notifications.html",
+        {"notifications": notifications}
+    )
+
+
+# ===========================
+# UNREAD COUNT (AJAX)
+# ===========================
+@login_required
+def notification_unread_count(request):
+    count = Notification.objects.filter(
+        user=request.user,
+        is_seen=False
+    ).count()
+    return JsonResponse({"count": count})
 
 
 @login_required
@@ -380,3 +431,22 @@ def toggle_follow(request, username):
 @login_required
 def settings_view(request):
     return render(request, 'posts/settings.html')
+
+@login_required
+def home(request):
+    posts = Post.objects.all().prefetch_related(
+        Prefetch(
+            "comments",
+            queryset=Comment.objects.filter(parent__isnull=True)
+            .select_related("user")
+            .prefetch_related(
+                Prefetch(
+                    "replies",
+                    queryset=Comment.objects.select_related("user").order_by("created_at")
+                )
+            )
+            .order_by("created_at")
+        )
+    ).order_by("-created_at")
+
+    return render(request, "posts/home.html", {"posts": posts})

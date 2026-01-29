@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone
 from datetime import timedelta
+from django.utils import timezone
 
 
 
@@ -28,15 +28,22 @@ class Post(models.Model):
 
     def __str__(self):
         return f'{self.user.username} Post'
-
+    
 class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     content = models.TextField()
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        related_name="replies",
+        on_delete=models.CASCADE
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f'{self.user.username} Comment'
+
+
     
 class Report(models.Model):
     post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='reports')
@@ -48,14 +55,53 @@ class Report(models.Model):
     def __str__(self):
         return f"Report by {self.reported_by} on Post {self.post.id}"
 
+
+
 class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    message = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications"
+    )
+
+    from_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="sent_notifications",
+        null=True,
+        blank=True
+    )
+
+    post = models.ForeignKey(
+        "Post",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    comment = models.ForeignKey(
+        "Comment",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    message = models.TextField(default="")
+
+    notif_type = models.CharField(
+        max_length=50,
+        default="comment"
+    )
+
+    is_seen = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Notification for {self.user.username}"
+        return self.message
+
+
+
 
 class Report(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reports")
