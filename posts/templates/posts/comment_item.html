@@ -1,0 +1,60 @@
+<div class="comments-list" id="comments-{{ post.id }}">
+
+  <div>
+    <strong>{{ comment.user.username }}</strong>
+    <span>{{ comment.content }}</span>
+  </div>
+
+  {% if comment.user == user %}
+  <button type="button"
+          class="delete-comment-btn"
+          onclick="deleteComment({{ comment.id }})">
+    🗑
+  </button>
+  {% endif %}
+</div>
+<script>
+let currentPostId = null;
+
+document.querySelectorAll(".comment-btn").forEach(btn => {
+  btn.onclick = () => {
+    currentPostId = btn.dataset.postId;
+  };
+});
+
+document.getElementById("sendCommentBtn").onclick = function (e) {
+  e.preventDefault();
+
+  const content = document.getElementById("commentContent").value.trim();
+  if (!content) return;
+
+  fetch(`/comment/${currentPostId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrftoken,
+      "X-Requested-With": "XMLHttpRequest"
+    },
+    body: new URLSearchParams({ content })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const box = document.getElementById(`comments-${currentPostId}`);
+
+    box.insertAdjacentHTML("beforeend", `
+      <div id="comment-${data.id}">
+        <strong>${data.user}</strong> ${data.content}
+      </div>
+    `);
+
+    document.querySelector(
+      `.comment-btn[data-post-id="${currentPostId}"] .comment-count`
+    ).innerText = data.count;
+
+    document.getElementById("commentContent").value = "";
+    bootstrap.Modal.getInstance(
+      document.getElementById("commentModal")
+    ).hide();
+  });
+};
+</script>
+

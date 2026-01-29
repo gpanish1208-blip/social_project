@@ -11,6 +11,7 @@ from django.utils import timezone
 from .models import Notification
 from datetime import timedelta
 from django.db.models import Prefetch
+from django.views.decorators.http import require_POST
 
 
 # -------------------- USER AUTH --------------------
@@ -152,44 +153,42 @@ def like_post(request, pk):
 
 # -------------------- COMMENTS --------------------
 @login_required
+@require_POST
 def add_comment(request, post_id):
+    content = request.POST.get("content", "").strip()
+    parent_id = request.POST.get("parent_id")
+
+    if not content:
+        return JsonResponse({"error": "Empty"}, status=400)
+
     post = get_object_or_404(Post, id=post_id)
 
-    if request.method == "POST":
-        content = request.POST.get("content", "").strip()
-        parent_id = request.POST.get("parent_id")
+    comment = Comment.objects.create(
+        post=post,
+        user=request.user,
+        content=content,
+        parent_id=parent_id or None
+    )
 
-        if not content:
-            return redirect("home")
-
-        # get parent comment if reply
-        parent_comment = None
-        if parent_id:
-            try:
-                parent_comment = Comment.objects.get(id=parent_id)
-            except Comment.DoesNotExist:
-                parent_comment = None
-
-        # create comment
-        comment = Comment.objects.create(
-            post=post,
-            user=request.user,
-            content=content,
-            parent=parent_comment
-        )
-
-        # 🔔 CREATE NOTIFICATION WHEN REPLY
-        if parent_comment and parent_comment.user != request.user:
+    # notification for reply
+    if parent_id:
+        parent = Comment.objects.get(id=parent_id)
+        if parent.user != request.user:
             Notification.objects.create(
-                user=parent_comment.user,
+                user=parent.user,
                 from_user=request.user,
                 post=post,
                 comment=comment,
-                message=f"{request.user.username} replied to your comment",
-                notif_type="reply"
+                message=f"{request.user.username} replied to your comment"
             )
 
-    return redirect("home")
+    return JsonResponse({
+        "id": comment.id,
+        "user": request.user.username,
+        "content": comment.content,
+        "count": post.comments.count(),
+    })
+
 
 @login_required
 def delete_comment(request, comment_id):
