@@ -247,18 +247,21 @@ def delete_comment(request, comment_id):
 
 # -------------------- PROFILE --------------------
 
+
 @login_required
 def profile_view(request, username):
     user_obj = get_object_or_404(User, username=username)
-    profile = Profile.objects.get(user=user_obj)
+
+    # ✅ SAFE: creates profile if missing
+    profile, created = Profile.objects.get_or_create(user=user_obj)
 
     posts = Post.objects.filter(user=user_obj).order_by('-created_at')
 
     return render(request, 'posts/profile.html', {
         'profile': profile,
         'posts': posts,
+        'user_obj': user_obj,   # optional but useful
     })
-
 
 @login_required
 def edit_profile(request):
