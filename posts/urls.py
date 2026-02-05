@@ -37,13 +37,15 @@ urlpatterns = [
 
     path('notifications/', views.notifications_view, name='notifications'),
     path("notifications/unread/", views.notification_unread_count, name="notification_unread_count"),
-
-
+    path("post/<int:pk>/", views.post_detail, name="post_detail"),
 
     # story
     path('story/upload/', views.upload_story, name='upload_story'),
     path('story/<int:user_id>/', views.view_story, name='view_story'),
     path('story/delete/<int:story_id>/', views.delete_story, name='delete_story'),
+
+    #like
+    path("like/<int:post_id>/", views.like_post, name="like_post"),
 
 
 

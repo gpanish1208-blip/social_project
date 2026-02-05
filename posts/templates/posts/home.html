@@ -94,7 +94,7 @@
       <!-- Post Image -->
       <div class="mb-2">
         <a href="{% url 'post_detail' post.pk %}">
-          <img src="{{ post.image.url }}" class="post-image rounded shadow-sm">
+          <img src="{{ post.image.url }}" class="post-image" alt="post image">
 
         </a>
       </div>
@@ -132,9 +132,10 @@
 
   <!-- VIEW ALL -->
   {% if post.comments.count > 2 %}
-  <button class="view-comments-btn" onclick="toggleComments('{{ post.id }}')">
-    View all {{ post.comments.count }} comments
-  </button>
+<button class="toggle-comments-btn"
+        onclick="toggleComments('{{ post.pk }}', this)">
+  View {{ post.comments.count }} comments
+</button>
   {% endif %}
 
   <!-- COMMENTS WRAPPER -->
@@ -162,14 +163,19 @@
     </div>
 
     <!-- REPLY FORM -->
-    <div id="reply-form-{{ comment.id }}" class="reply-form d-none">
-      <form method="POST" action="{% url 'add_comment' post.id %}">
-        {% csrf_token %}
-        <input type="hidden" name="parent_id" value="{{ comment.id }}">
-        <input type="text" name="content" placeholder="Write a reply…" required>
-        <button type="submit">Reply</button>
-      </form>
-    </div>
+    <div class="reply-form d-none" id="reply-form-{{ comment.id }}">
+  <input type="text"
+         class="form-control form-control-sm"
+         placeholder="Reply..."
+         id="reply-input-{{ comment.id }}">
+
+  <button type="button"
+          class="btn btn-sm btn-primary mt-1"
+          onclick="submitReply({{ post.id }}, {{ comment.id }})">
+    Reply
+  </button>
+</div>
+
 
     <!-- REPLIES -->
     {% for reply in comment.replies.all %}
@@ -251,6 +257,45 @@
 
 
 <script>
+  function submitReply(postId, parentId) {
+  const input = document.getElementById("reply-input-" + parentId);
+  const content = input.value.trim();
+  if (!content) return;
+
+  fetch(`/comment/${postId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrftoken,
+      "X-Requested-With": "XMLHttpRequest"
+    },
+    body: new URLSearchParams({
+      content: content,
+      parent_id: parentId
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const repliesBox = document.getElementById("replies-" + parentId);
+
+    repliesBox.insertAdjacentHTML("beforeend", `
+      <div class="comment-item" id="comment-${data.id}">
+        <strong>${data.user}</strong> ${data.content}
+        <button onclick="deleteComment(${data.id})" class="btn btn-sm text-danger">🗑</button>
+      </div>
+    `);
+
+    input.value = "";
+    document.getElementById("reply-form-" + parentId).classList.add("d-none");
+  });
+}
+function toggleComments(postId, btn) {
+  const box = document.getElementById("comments-" + postId);
+  box.classList.toggle("d-none");
+  btn.innerText = box.classList.contains("d-none")
+    ? "View comments"
+    : "Hide comments";
+}
+
   function submitReport(postId) {
     const reason = document.getElementById(`reportReason${postId}`).value.trim();
     if (!reason) return alert("Please enter a reason.");
@@ -404,6 +449,31 @@ function deleteComment(id) {
     }
   });
 }       
+
+document.querySelectorAll(".like-btn").forEach(btn => {
+  btn.addEventListener("click", function () {
+    const postId = this.dataset.postId;
+
+    fetch(`/like/${postId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+        "X-Requested-With": "XMLHttpRequest"
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      this.querySelector(".like-count").innerText = data.likes_count;
+
+      const heart = this.querySelector("svg");
+      if (data.liked) {
+        heart.setAttribute("fill", "red");
+      } else {
+        heart.setAttribute("fill", "none");
+      }
+    });
+  });
+});
 </script>
 
 
@@ -514,12 +584,13 @@ function deleteComment(id) {
    POST IMAGE SIZE FIX
 =========================== */
   .post-image {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    /* Instagram square */
-    overflow: hidden;
-    background: #000;
-  }
+  width: 100%;
+  height: auto;          
+  max-height: none;      
+  object-fit: contain; 
+  background: black;   
+}
+
 
   .post-image img {
     width: 100%;
@@ -650,11 +721,13 @@ function deleteComment(id) {
   /* ===== GLASS COMMENT DISPLAY ===== */
 
 
-  .comments-list {
-    max-height: 120px;
-    overflow-y: auto;
-  }
+.comments-list {
+  margin-top: 6px;
+}
 
+.comments-list.d-none {
+  display: none;
+}
 
   .no-comments {
     font-size: 13px;
@@ -1062,10 +1135,14 @@ function deleteComment(id) {
 
     /* Image container */
     .post-image-wrapper {
-      width: 100%;
-      overflow: hidden;
-      background: #000;
-    }
+  height: 400px;
+  overflow: hidden;
+}
+@media (min-width: 992px) {
+  .post-image {
+    max-height: 80vh;   /* desktop safe */
+  }
+}
 
     /* Image auto adjust */
     .post-image,
@@ -1146,12 +1223,30 @@ function deleteComment(id) {
     }
 
   }
-  .view-comments-btn {
+
+@media (min-width: 992px) {
+  .post-image {
+    max-height: 80vh;   /* desktop safe */
+  }
+}
+/* View comments (Instagram style) */
+.view-comments-btn,
+.toggle-comments-btn {
   background: none;
   border: none;
-  color: #999;
-  font-size: 13px;
-  margin-bottom: 5px;
+  padding: 0;
+  margin-top: 6px;
+  color: #a8a8a8;        /* Instagram gray */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+}
+
+.view-comments-btn:hover,
+.toggle-comments-btn:hover {
+  text-decoration: underline;
+  color: #d0d0d0;
 }
 </style>
 

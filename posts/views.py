@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
@@ -8,7 +9,6 @@ from .models import Post, Profile, Comment, Report, Story,Notification
 from .forms import RegisterForm, PostForm, ProfileForm, StoryForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils import timezone
-from .models import Notification
 from datetime import timedelta
 from django.db.models import Prefetch
 from django.views.decorators.http import require_POST
@@ -132,34 +132,54 @@ def delete_post(request, pk):
 
 
 @login_required
-def like_post(request, pk):
-    """Like or unlike a post"""
-    post = get_object_or_404(Post, pk=pk)
+def like_post(request, post_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request"}, status=400)
 
-    if request.user in post.likes.all():
-        post.likes.remove(request.user)
+    post = get_object_or_404(Post, id=post_id)
+    user = request.user
+
+    if user in post.likes.all():
+        post.likes.remove(user)
+
+        # remove old notification
+        Notification.objects.filter(
+            user=post.user,
+            from_user=user,
+            post=post,
+            notif_type="like"
+        ).delete()
+
         liked = False
+
     else:
-        post.likes.add(request.user)
+        post.likes.add(user)
         liked = True
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({
-            'liked': liked,
-            'likes_count': post.likes.count(),
-        })
-    return redirect('home')
+        if post.user != user:
+            Notification.objects.create(
+                user=post.user,
+                from_user=user,
+                post=post,
+                notif_type="like",
+                message=f"{user.username} liked your post"
+            )
 
-
+    return JsonResponse({
+        "liked": liked,
+        "likes_count": post.likes.count()
+    })
 # -------------------- COMMENTS --------------------
 @login_required
-@require_POST
 def add_comment(request, post_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid"}, status=400)
+
     content = request.POST.get("content", "").strip()
     parent_id = request.POST.get("parent_id")
 
     if not content:
-        return JsonResponse({"error": "Empty"}, status=400)
+        return JsonResponse({"error": "Empty comment"}, status=400)
 
     post = get_object_or_404(Post, id=post_id)
 
@@ -167,26 +187,46 @@ def add_comment(request, post_id):
         post=post,
         user=request.user,
         content=content,
-        parent_id=parent_id or None
+        parent_id=parent_id if parent_id else None
     )
 
-    # notification for reply
+   
+    # ================================
+    # 🔔 NOTIFICATION LOGIC (INSTAGRAM)
+    # ================================
+
+    # 1️⃣ Reply notification
     if parent_id:
-        parent = Comment.objects.get(id=parent_id)
-        if parent.user != request.user:
+        parent_comment = Comment.objects.get(id=parent_id)
+
+        if parent_comment.user != request.user:
             Notification.objects.create(
-                user=parent.user,
+                user=parent_comment.user,
                 from_user=request.user,
                 post=post,
                 comment=comment,
+                notif_type="reply",
                 message=f"{request.user.username} replied to your comment"
+            )
+
+    # 2️⃣ Normal comment notification (post owner)
+    else:
+        if post.user != request.user:
+            Notification.objects.create(
+                user=post.user,
+                from_user=request.user,
+                post=post,
+                comment=comment,
+                notif_type="comment",
+                message=f"{request.user.username} commented on your post"
             )
 
     return JsonResponse({
         "id": comment.id,
         "user": request.user.username,
         "content": comment.content,
-        "count": post.comments.count(),
+        "parent_id": parent_id,
+        "count": post.comments.count()
     })
 
 
@@ -293,6 +333,20 @@ def logout_view(request):
 # ===========================
 # NOTIFICATION LIST VIEW
 # ===========================
+
+
+@login_required
+def notifications(request):
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).select_related("post", "from_user").order_by("-created_at")
+
+    return render(request, "posts/notifications.html", {
+        "notifications": notifications
+    })
+
+
+
 @login_required
 def notifications_view(request):
     notifications = (
