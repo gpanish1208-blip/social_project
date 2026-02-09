@@ -133,62 +133,45 @@ def delete_post(request, pk):
 
 @login_required
 def like_post(request, post_id):
-    if request.method != "POST":
-        return JsonResponse({"error": "Invalid request"}, status=400)
+    if request.method == "POST":
+        post = get_object_or_404(Post, id=post_id)
 
-    post = get_object_or_404(Post, id=post_id)
-    user = request.user
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)
+            liked = False
+        else:
+            post.likes.add(request.user)
+            liked = True
 
-    if user in post.likes.all():
-        post.likes.remove(user)
+        return JsonResponse({
+            "liked": liked,
+            "likes_count": post.likes.count()
+        })
 
-        # remove old notification
-        Notification.objects.filter(
-            user=post.user,
-            from_user=user,
-            post=post,
-            notif_type="like"
-        ).delete()
-
-        liked = False
-
-    else:
-        post.likes.add(user)
-        liked = True
-
-        if post.user != user:
-            Notification.objects.create(
-                user=post.user,
-                from_user=user,
-                post=post,
-                notif_type="like",
-                message=f"{user.username} liked your post"
-            )
-
-    return JsonResponse({
-        "liked": liked,
-        "likes_count": post.likes.count()
-    })
+    return JsonResponse({"error": "Invalid request"}, status=400)
 # -------------------- COMMENTS --------------------
 @login_required
 def add_comment(request, post_id):
-    if request.method != "POST":
-        return JsonResponse({"error": "Invalid"}, status=400)
+    if request.method == "POST":
+        content = request.POST.get("content", "").strip()
+        if not content:
+            return JsonResponse({"error": "Empty"}, status=400)
 
-    content = request.POST.get("content", "").strip()
-    parent_id = request.POST.get("parent_id")
+        post = get_object_or_404(Post, id=post_id)
 
-    if not content:
-        return JsonResponse({"error": "Empty comment"}, status=400)
+        Comment.objects.create(
+            post=post,
+            user=request.user,
+            content=content
+        )
 
-    post = get_object_or_404(Post, id=post_id)
+        return JsonResponse({
+            "status": "success",
+            "comments_count": post.comments.count()
+        })
 
-    comment = Comment.objects.create(
-        post=post,
-        user=request.user,
-        content=content,
-        parent_id=parent_id if parent_id else None
-    )
+    return JsonResponse({"error": "Invalid"}, status=400)
+
 
    
     # ================================

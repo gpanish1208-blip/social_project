@@ -474,6 +474,44 @@ document.querySelectorAll(".like-btn").forEach(btn => {
     });
   });
 });
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+// const csrftoken = getCookie('csrftoken');   
+
+
+fetch(`/like/${postId}/`, {
+  method: "POST",
+  headers: {
+    "X-CSRFToken": csrftoken,
+    "X-Requested-With": "XMLHttpRequest"
+  }
+})
+.then(res => res.json())
+.then(data => {
+  btn.querySelector(".like-count").innerText = data.likes_count;
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".like-btn").forEach(btn => {
+    btn.addEventListener("click", function () {
+      // your code
+    });
+  });
+});
 </script>
 
 
