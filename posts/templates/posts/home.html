@@ -85,7 +85,7 @@
             {% if post.user == user %}
             <li><a class="dropdown-item text-danger" href="{% url 'delete_post' post.id %}">Delete</a></li>
             {% endif %}
-            <li><a class="dropdown-item text-warning" href="#" data-bs-toggle="modal"
+            <li><a class="dropdown-item text-warning" href="#" data-bs-toggle="modal" 
                 data-bs-target="#reportModal{{ post.id }}">Report</a></li>
           </ul>
         </div>
@@ -115,7 +115,7 @@
         </button>
 
         <!-- Comment -->
-        <button class="glass-btn comment-btn text-white" data-post-id="{{ post.pk }}" data-bs-toggle="modal"
+        <button class="glass-btn comment-btn text-white" data-post-id="{{ post.id }}" data-bs-toggle="modal"
           data-bs-target="#commentModal">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20"
             height="20">
@@ -257,224 +257,9 @@
 
 
 <script>
-  function submitReply(postId, parentId) {
-  const input = document.getElementById("reply-input-" + parentId);
-  const content = input.value.trim();
-  if (!content) return;
-
-  fetch(`/comment/${postId}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": csrftoken,
-      "X-Requested-With": "XMLHttpRequest"
-    },
-    body: new URLSearchParams({
-      content: content,
-      parent_id: parentId
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    const repliesBox = document.getElementById("replies-" + parentId);
-
-    repliesBox.insertAdjacentHTML("beforeend", `
-      <div class="comment-item" id="comment-${data.id}">
-        <strong>${data.user}</strong> ${data.content}
-        <button onclick="deleteComment(${data.id})" class="btn btn-sm text-danger">🗑</button>
-      </div>
-    `);
-
-    input.value = "";
-    document.getElementById("reply-form-" + parentId).classList.add("d-none");
-  });
-}
-function toggleComments(postId, btn) {
-  const box = document.getElementById("comments-" + postId);
-  box.classList.toggle("d-none");
-  btn.innerText = box.classList.contains("d-none")
-    ? "View comments"
-    : "Hide comments";
-}
-
-  function submitReport(postId) {
-    const reason = document.getElementById(`reportReason${postId}`).value.trim();
-    if (!reason) return alert("Please enter a reason.");
-
-    fetch("{% url 'report_post' 0 %}".replace("0", postId), {
-      method: "POST",
-      headers: { "X-CSRFToken": getCookie("csrftoken"), "X-Requested-With": "XMLHttpRequest" },
-      body: new URLSearchParams({ reason })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") {
-          alert("Report submitted successfully ✅");
-          bootstrap.Modal.getInstance(document.getElementById(`reportModal${postId}`)).hide();
-          document.getElementById(`reportReason${postId}`).value = "";
-        } else {
-          alert("Something went wrong.");
-        }
-      });
-  }
-
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let cookie of cookies) {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-  const csrftoken = getCookie('csrftoken');
-
-  // LIKE HANDLER
-  document.querySelectorAll('.like-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const postId = this.dataset.postId;
-      fetch("{% url 'like_post' 0 %}".replace("0", postId), {
-        method: "POST",
-        headers: { "X-CSRFToken": csrftoken, "X-Requested-With": "XMLHttpRequest" }
-      })
-        .then(res => res.json())
-        .then(data => {
-          this.querySelector('.like-count').innerText = data.likes_count;
-          const heart = this.querySelector('svg');
-          if (data.liked) {
-            this.classList.add('active');
-            heart.setAttribute('fill', 'red');
-            this.animate([{ transform: 'scale(1.3)' }, { transform: 'scale(1)' }], { duration: 200 });
-          } else {
-            this.classList.remove('active');
-            heart.setAttribute('fill', 'none');
-          }
-        });
-    });
-  });
-
-  // COMMENT HANDLER
-  let currentPostId = null;
-  document.querySelectorAll('.comment-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      currentPostId = this.dataset.postId;
-    });
-  });
-
-  document.getElementById('sendCommentBtn').addEventListener('click', function () {
-    const content = document.getElementById('commentContent').value;
-    if (!content.trim()) return;
-
-    fetch("{% url 'add_comment' 0 %}".replace("0", currentPostId), {
-      method: "POST",
-      headers: { "X-CSRFToken": csrftoken, "X-Requested-With": "XMLHttpRequest" },
-      body: new URLSearchParams({ content })
-    })
-      .then(res => res.json())
-      .then(data => {
-        const btn = document.querySelector(`.comment-btn[data-post-id="${currentPostId}"]`);
-        btn.querySelector('.comment-count').innerText = data.comments_count;
-        document.getElementById('commentContent').value = '';
-        bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();
-      });
-  });
-  function toggleComments(postId, btn) {
-    const commentsBox = document.getElementById(`comments-${postId}`);
-
-    if (commentsBox.classList.contains('d-none')) {
-      commentsBox.classList.remove('d-none');
-      btn.innerText = "Hide comments";
-    } else {
-      commentsBox.classList.add('d-none');
-      btn.innerText = "View comments";
-    }
-  }
-
-  function deleteComment(commentId) {
-    if (!confirm("Delete this comment?")) return;
-
-    fetch(`/comment/delete/${commentId}/`, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": csrftoken,
-        "X-Requested-With": "XMLHttpRequest"
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") {
-          const el = document.getElementById(`comment-${commentId}`);
-          if (el) el.remove();
-        } else {
-          alert("Failed to delete comment");
-        }
-      });
-  }
-  const offcanvas = document.getElementById('mobileSidebar');
-
-  offcanvas.addEventListener('shown.bs.offcanvas', () => {
-    document.body.style.pointerEvents = 'none';
-    offcanvas.style.pointerEvents = 'auto';
-  });
-
-  offcanvas.addEventListener('hidden.bs.offcanvas', () => {
-    document.body.style.pointerEvents = 'auto';
-  });
-
-  function showReplyForm(id) {
-    const form = document.getElementById(`reply-form-${id}`);
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  }
-  function openReplyForm(id) {
-  const form = document.getElementById("reply-form-" + id);
-  form.classList.toggle("d-none");
-}
-
-function deleteComment(id) {
-  fetch(`/comment/delete/${id}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": "{{ csrf_token }}"
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === "success") {
-      document.getElementById("comment-" + id)?.remove();
-      location.reload();
-    }
-  });
-}       
-
-document.querySelectorAll(".like-btn").forEach(btn => {
-  btn.addEventListener("click", function () {
-    const postId = this.dataset.postId;
-
-    fetch(`/like/${postId}/`, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": getCookie("csrftoken"),
-        "X-Requested-With": "XMLHttpRequest"
-      }
-    })
-    .then(res => res.json())
-    .then(data => {
-      this.querySelector(".like-count").innerText = data.likes_count;
-
-      const heart = this.querySelector("svg");
-      if (data.liked) {
-        heart.setAttribute("fill", "red");
-      } else {
-        heart.setAttribute("fill", "none");
-      }
-    });
-  });
-});
-
+/* =========================
+   CSRF
+========================= */
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -489,30 +274,155 @@ function getCookie(name) {
   }
   return cookieValue;
 }
-// const csrftoken = getCookie('csrftoken');   
+const csrftoken = getCookie('csrftoken');
 
+/* =========================
+   GLOBAL STATE
+========================= */
+let currentPostId = null;
 
-fetch(`/like/${postId}/`, {
-  method: "POST",
-  headers: {
-    "X-CSRFToken": csrftoken,
-    "X-Requested-With": "XMLHttpRequest"
-  }
-})
-.then(res => res.json())
-.then(data => {
-  btn.querySelector(".like-count").innerText = data.likes_count;
-});
+/* =========================
+   LIKE HANDLER
+========================= */
+document.querySelectorAll(".like-btn").forEach(btn => {
+  btn.addEventListener("click", function () {
+    const postId = this.dataset.postId;
 
-
-document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll(".like-btn").forEach(btn => {
-    btn.addEventListener("click", function () {
-      // your code
+    fetch("{% url 'like_post' 0 %}".replace("0", postId), {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": csrftoken,
+        "X-Requested-With": "XMLHttpRequest"
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      this.querySelector(".like-count").innerText = data.likes_count;
+      const heart = this.querySelector("svg");
+      heart.setAttribute("fill", data.liked ? "red" : "none");
     });
   });
 });
+
+/* =========================
+   COMMENT MODAL OPEN
+========================= */
+document.querySelectorAll(".comment-btn").forEach(btn => {
+  btn.addEventListener("click", function () {
+    currentPostId = this.dataset.postId;
+  });
+});
+
+/* =========================
+   ADD COMMENT
+========================= */
+document.getElementById("sendCommentBtn")?.addEventListener("click", function () {
+  const content = document.getElementById("commentContent").value.trim();
+  if (!content || !currentPostId) return;
+
+  fetch("{% url 'add_comment' 0 %}".replace("0", currentPostId), {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrftoken,
+      "X-Requested-With": "XMLHttpRequest"
+    },
+    body: new URLSearchParams({ content })
+  })
+  .then(res => res.json())
+  .then(() => {
+    document.getElementById("commentContent").value = "";
+    bootstrap.Modal.getInstance(
+      document.getElementById("commentModal")
+    ).hide();
+    location.reload(); // keeps logic simple & stable
+  });
+});
+
+/* =========================
+   TOGGLE COMMENTS
+========================= */
+function toggleComments(postId, btn) {
+  const box = document.getElementById(`comments-${postId}`);
+  if (!box) return;
+
+  box.classList.toggle("d-none");
+  btn.innerText = box.classList.contains("d-none")
+    ? "View comments"
+    : "Hide comments";
+}
+
+/* =========================
+   DELETE COMMENT
+========================= */
+function deleteComment(commentId) {
+  if (!confirm("Delete this comment?")) return;
+
+  fetch(`/comment/delete/${commentId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrftoken,
+      "X-Requested-With": "XMLHttpRequest"
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      document.getElementById(`comment-${commentId}`)?.remove();
+    }
+  });
+}
+
+/* =========================
+   REPLY
+========================= */
+function submitReply(parentId) {
+  const input = document.getElementById(`reply-input-${parentId}`);
+  const content = input.value.trim();
+  if (!content || !currentPostId) return;
+
+  fetch("{% url 'add_comment' 0 %}".replace("0", currentPostId), {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrftoken,
+      "X-Requested-With": "XMLHttpRequest"
+    },
+    body: new URLSearchParams({
+      content: content,
+      parent_id: parentId
+    })
+  })
+  .then(res => res.json())
+  .then(() => location.reload());
+}
+
+function openReplyForm(id) {
+  document.getElementById(`reply-form-${id}`)?.classList.toggle("d-none");
+}
+
+/* =========================
+   REPORT
+========================= */
+function submitReport(postId) {
+  const reason = document.getElementById(`reportReason${postId}`).value.trim();
+  if (!reason) return alert("Please enter a reason.");
+
+  fetch("{% url 'report_post' 0 %}".replace("0", postId), {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrftoken,
+      "X-Requested-With": "XMLHttpRequest"
+    },
+    body: new URLSearchParams({ reason })
+  })
+  .then(res => res.json())
+  .then(() => {
+    bootstrap.Modal
+      .getInstance(document.getElementById(`reportModal${postId}`))
+      .hide();
+  });
+}
 </script>
+
 
 
 <style>
@@ -790,8 +700,6 @@ document.addEventListener("DOMContentLoaded", function () {
   .toggle-comments-btn:hover {
     text-decoration: underline;
   }
-
-  <style>
 
   /* =============================
    COMMENTS RESPONSIVE
